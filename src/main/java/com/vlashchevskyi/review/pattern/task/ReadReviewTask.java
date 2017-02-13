@@ -16,7 +16,7 @@ public class ReadReviewTask extends ReviewTaskObserver {
 
     public ReadReviewTask(String pathToReview) throws IOException {
         reader = new CsvReader(pathToReview);
-        reader.getHeaders();
+        reader.readHeaders();
     }
 
     @Override
