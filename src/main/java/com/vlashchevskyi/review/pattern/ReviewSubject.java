@@ -10,35 +10,7 @@ public class ReviewSubject {
     private List<String[]> records = new ArrayList<>();
     private List<ReviewTaskObserver> tasks = new ArrayList<>();
     private int readyCounter = 0;
-
-    public void setRecords(List<String[]> records) {
-        this.records = records;
-        update();
-    }
-
-    public Integer getReadyCounter() {
-        return readyCounter;
-    }
-
-    public int getTasksAmount() {
-        return tasks.size();
-    }
-
-    public void updateCounter() {
-        synchronized (this) {
-            readyCounter++;
-        }
-    }
-
-    public void resetCounter() {
-        synchronized (this) {
-            readyCounter = 0;
-        }
-    }
-
-    public List<String[]> getRecords() {
-        return records;
-    }
+    private final String lock;
 
     public void addTask(ReviewTaskObserver task) {
         task.setSubject(this);
@@ -50,14 +22,43 @@ public class ReviewSubject {
         tasks.remove(task);
     }
 
-    public void update() {
-        tasks.forEach(t-> t.handle());
+    public synchronized void updateReadyCounter() {
+        readyCounter++;
     }
 
     public void start(ReviewTaskObserver task) {
         synchronized (task) {
+            readyCounter = 0;
             task.notify();
         }
+    }
 
+    public void update() {
+        tasks.forEach(t-> t.handle());
+    }
+
+    public synchronized Integer getReadyCounter() {
+        return readyCounter;
+    }
+
+    public void setRecords(List<String[]> records) {
+        synchronized (lock) {
+            this.records = records;
+            update();
+        }
+    }
+
+    public List<String[]> getRecords() {
+        synchronized (lock) {
+            return records;
+        }
+    }
+
+    public int getTasksAmount() {
+        return tasks.size();
+    }
+
+    public ReviewSubject() {
+        lock = new String("records");
     }
 }

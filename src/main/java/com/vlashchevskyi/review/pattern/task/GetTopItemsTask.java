@@ -17,7 +17,7 @@ public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTask
     public T doAction() throws Exception {
         T itemStat = analyze();
         aggregate(itemStat);
-        return analyze();
+        return itemStat;
     }
 
     public T analyze() throws Exception {

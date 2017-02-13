@@ -26,7 +26,9 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
-                subject.updateCounter();
+                //System.out.print("Thread B: " + Thread.currentThread().getId());
+                subject.updateReadyCounter();
+                //System.out.println(", class" + this.getClass());
             } while (records.size() > 0);
         }
         return getResult();

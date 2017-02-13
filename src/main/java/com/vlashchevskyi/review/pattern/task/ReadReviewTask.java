@@ -19,6 +19,13 @@ public class ReadReviewTask extends ReviewTaskObserver {
         reader.getHeaders();
     }
 
+    @Override
+    public Object doAction() throws Exception {
+        List<String[]> records = read();
+        subject.setRecords(records);
+        return records;
+    }
+
     public List<String[]> read() throws Exception {
         List<String[]> records = new ArrayList<>();
         for (int i = 0; reader.readRecord() && i < limit; i++) {
@@ -33,10 +40,5 @@ public class ReadReviewTask extends ReviewTaskObserver {
         return null;
     }
 
-    @Override
-    public Object doAction() throws Exception {
-        List<String[]> records = read();
-        subject.setRecords(records);
-        return records;
-    }
+
 }

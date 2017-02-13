@@ -23,55 +23,54 @@ public class Runner {
     private ReviewPrinter printer = new ReviewPrinter();
 
     public static void main(String[] args) {
-
         try {
             new Runner().trigger();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void trigger() throws IOException, ExecutionException, InterruptedException {
-        pool = Executors.newFixedThreadPool(5);
-
-        ReviewSubject subject = new ReviewSubject();
-        List<Future> fes = new ArrayList<>();
-
         List<ReviewTaskObserver> tasks = new ArrayList<>();
-        tasks.add(new ReadReviewTask("Reviews.csv"));
+        ReviewTaskObserver readTask = new ReadReviewTask("Reviews.csv");
+        tasks.add(readTask);
         tasks.add(new GetTopItemsTask()); // TODO: TASK = 1
         tasks.add(new GetTopUsersTask()); // TODO: TASK = 2
         tasks.add(new GetTopWordsTask()); // TODO: TASK = 3
-        tasks.forEach(t -> {
-            subject.addTask(t);
-            fes.add(pool.submit(t));
-        });
+
+        ReviewSubject subject = new ReviewSubject();
+        tasks.forEach(t -> subject.addTask(t));
+        List<Future> fes = null;
 
         try {
-            ReviewTaskObserver readTask = tasks.get(0);
+
+            fes = submit(tasks);
             subject.start(readTask);
             do {
                 if (subject.getReadyCounter() == subject.getTasksAmount()) {
-                    subject.resetCounter();
                     subject.start(readTask);
                 }
             } while (fes.stream().anyMatch(f -> !f.isDone()));
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             pool.shutdown();
-            printAll(fes, AMOUNT);
+            printer.printAll(fes, AMOUNT);
         }
     }
-    public void printAll(List<Future> fes, int amount) throws ExecutionException, InterruptedException {
-        final int ITEM_TASK = 1;
-        final int USER_TASK = 2;
-        final int WORD_TASK = 3;
 
-        printer.print(fes.get(USER_TASK), amount, "Top of the most active users");
-        printer.print(fes.get(ITEM_TASK), amount, "Top of the most commented products");
-        printer.print(fes.get(WORD_TASK), amount, "Top of the most used words");
+    private synchronized List<Future> submit(List<ReviewTaskObserver> tasks) throws InterruptedException {
+        List<Future> fes = new ArrayList<>();
+        tasks.forEach(t -> {
+            fes.add(pool.submit(t));
+        });
+        wait(5000);
+
+        return fes;
+    }
+
+    public Runner() {
+        pool = Executors.newFixedThreadPool(5);
     }
 }
