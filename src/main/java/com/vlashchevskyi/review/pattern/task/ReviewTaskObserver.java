@@ -1,7 +1,7 @@
-package com.vlashchevskyi.review.pattern;
+package com.vlashchevskyi.review.pattern.task;
 
 
-import com.vlashchevskyi.review.pattern.task.ReviewTask;
+import com.vlashchevskyi.review.pattern.ReviewSubject;
 
 import java.util.List;
 
@@ -10,31 +10,22 @@ import java.util.List;
  */
 public abstract class ReviewTaskObserver<T> implements ReviewTask {
 
-    protected List<String[]> records;
+    private List<String[]> records;
     protected ReviewSubject subject;
 
-    public ReviewTaskObserver() {
-    }
+    private boolean testMode = false;
 
     @Override
     public T call() throws Exception {
         synchronized (this) {
             do {
                 wait();
-                try {
-                    doAction();
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
-                //System.out.print("Thread B: " + Thread.currentThread().getId());
+                doAction();
                 subject.updateReadyCounter();
-                //System.out.println(", class" + this.getClass());
-            } while (records.size() > 0);
+            } while (records.size() > 0 && !testMode);
         }
         return getResult();
     }
-
-    protected abstract T getResult();
 
     public void setSubject(ReviewSubject subject) {
         this.subject = subject;
@@ -43,10 +34,19 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     public void handle() {
         List<String[]> recs = subject.getRecords();
         if (!recs.equals(records)) {
-            records = recs;
             synchronized (this) {
+                records = recs;
                 notify();
             }
         }
     }
+    public List<String[]> getRecords() {
+        return records;
+    }
+
+    public void setTestMode(boolean mode) {
+        testMode = mode;
+    }
+
+    protected abstract T getResult();
 }

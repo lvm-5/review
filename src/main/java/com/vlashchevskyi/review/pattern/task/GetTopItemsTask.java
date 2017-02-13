@@ -1,7 +1,5 @@
 package com.vlashchevskyi.review.pattern.task;
 
-import com.vlashchevskyi.review.pattern.ReviewTaskObserver;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,31 +18,29 @@ public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTask
         return itemStat;
     }
 
-    public T analyze() throws Exception {
+    protected T analyze() throws Exception {
         return sumByColumn(PRODUCT_ID_COLUMN);
     }
 
     private void aggregate(T items) {
         items.forEach((id, sum)->{
             Integer sm = topItems.get(id);
-            topItems.put(id, sm != null? sm + sum: sum);
+            sm = (sm != null)? sm + sum: sum;
+            topItems.put(id, sm);
         });
     }
 
     protected T sumByColumn(int column) {
         T statistics = (T) new HashMap<K, Integer>();
-        for (String[] record : records) {
+        for (String[] record : getRecords()) {
             String itemID = record[column];
             Integer sum = statistics.get(itemID);
-            sum = (sum == null) ? 1 : ++sum;
+            sum = (sum == null)? 1
+                    : ++sum;
             statistics.put((K)itemID, sum);
         }
 
         return statistics;
-    }
-
-    public GetTopItemsTask() {
-        topItems = (T) new HashMap<K, Integer>();
     }
 
     @Override
@@ -54,5 +50,9 @@ public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTask
 
     public T getTopItems() {
         return topItems;
+    }
+
+    public GetTopItemsTask() {
+        topItems = (T) new HashMap<K, Integer>();
     }
 }

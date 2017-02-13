@@ -1,7 +1,6 @@
 package com.vlashchevskyi.review.pattern.task;
 
 import com.csvreader.CsvReader;
-import com.vlashchevskyi.review.pattern.ReviewTaskObserver;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,25 +9,22 @@ import java.util.List;
 /**
  * Created by lvm on 2/10/17.
  */
-public class ReadReviewTask extends ReviewTaskObserver {
+public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver {
     private int limit = 1500;
     private final CsvReader reader;
-
-    public ReadReviewTask(String pathToReview) throws IOException {
-        reader = new CsvReader(pathToReview);
-        reader.readHeaders();
-    }
+    private T result;
 
     @Override
-    public Object doAction() throws Exception {
-        List<String[]> records = read();
+    public T doAction() throws Exception {
+        T records = (T)read();
         subject.setRecords(records);
+        result = records;
         return records;
     }
 
-    public List<String[]> read() throws Exception {
-        List<String[]> records = new ArrayList<>();
-        for (int i = 0; reader.readRecord() && i < limit; i++) {
+    public T read() throws Exception {
+        T records = (T)new ArrayList<String[]>();
+        for (int i = 0; i < limit && reader.readRecord(); i++) {
             records.add(reader.getValues());
         }
 
@@ -36,8 +32,22 @@ public class ReadReviewTask extends ReviewTaskObserver {
     }
 
     @Override
-    protected Object getResult() {
-        return null;
+    protected T getResult() {
+        return result;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public ReadReviewTask(String pathToReview, int limit) throws IOException {
+        this(pathToReview);
+        this.limit = limit;
+    }
+
+    public ReadReviewTask(String pathToReview) throws IOException {
+        reader = new CsvReader(pathToReview);
+        reader.readHeaders();
     }
 
 

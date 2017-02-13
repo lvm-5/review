@@ -1,9 +1,6 @@
 package com.vlashchevskyi.review.pattern;
 
-import com.vlashchevskyi.review.pattern.task.GetTopItemsTask;
-import com.vlashchevskyi.review.pattern.task.GetTopUsersTask;
-import com.vlashchevskyi.review.pattern.task.GetTopWordsTask;
-import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
+import com.vlashchevskyi.review.pattern.task.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,35 +12,32 @@ import java.util.concurrent.Future;
 
 /**
  * Created by lvm on 2/6/17.
- *
  */
 public class Runner {
     private final int AMOUNT = 1000;
-    private ExecutorService pool = null;
-    private ReviewPrinter printer = new ReviewPrinter();
+    private final ExecutorService pool;
+    private final ReviewPrinter printer;
 
     public static void main(String[] args) {
         try {
-            new Runner().trigger();
+            new Runner().trigger(new ReadReviewTask("Reviews.csv"));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void trigger() throws IOException, ExecutionException, InterruptedException {
+    public void trigger(ReviewTaskObserver readTask) throws IOException, ExecutionException, InterruptedException {
         List<ReviewTaskObserver> tasks = new ArrayList<>();
-        ReviewTaskObserver readTask = new ReadReviewTask("Reviews.csv");
         tasks.add(readTask);
-        tasks.add(new GetTopItemsTask()); // TODO: TASK = 1
-        tasks.add(new GetTopUsersTask()); // TODO: TASK = 2
-        tasks.add(new GetTopWordsTask()); // TODO: TASK = 3
+        tasks.add(new GetTopItemsTask());
+        tasks.add(new GetTopUsersTask());
+        tasks.add(new GetTopWordsTask());
 
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));
+
         List<Future> fes = null;
-
         try {
-
             fes = submit(tasks);
             subject.start(readTask);
             do {
@@ -51,12 +45,9 @@ public class Runner {
                     subject.start(readTask);
                 }
             } while (fes.stream().anyMatch(f -> !f.isDone()));
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             pool.shutdown();
-            printer.printAll(fes, AMOUNT);
+            printer.printAllWith(fes, AMOUNT);
         }
     }
 
@@ -72,5 +63,6 @@ public class Runner {
 
     public Runner() {
         pool = Executors.newFixedThreadPool(5);
+        printer = new ReviewPrinter();
     }
 }

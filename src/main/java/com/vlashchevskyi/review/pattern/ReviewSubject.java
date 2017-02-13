@@ -1,5 +1,7 @@
 package com.vlashchevskyi.review.pattern;
 
+import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +24,8 @@ public class ReviewSubject {
         tasks.remove(task);
     }
 
-    public synchronized void updateReadyCounter() {
-        readyCounter++;
+    public void update() {
+        tasks.forEach(t-> t.handle());
     }
 
     public void start(ReviewTaskObserver task) {
@@ -31,14 +33,6 @@ public class ReviewSubject {
             readyCounter = 0;
             task.notify();
         }
-    }
-
-    public void update() {
-        tasks.forEach(t-> t.handle());
-    }
-
-    public synchronized Integer getReadyCounter() {
-        return readyCounter;
     }
 
     public void setRecords(List<String[]> records) {
@@ -52,6 +46,14 @@ public class ReviewSubject {
         synchronized (lock) {
             return records;
         }
+    }
+
+    public synchronized void updateReadyCounter() {
+        readyCounter++;
+    }
+
+    public synchronized Integer getReadyCounter() {
+        return readyCounter;
     }
 
     public int getTasksAmount() {
