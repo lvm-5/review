@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public class BaseTest {
     private ReadReviewTask readTask;
-    public final int LIMIT = 100;
+    public final int LIMIT = 10;
 
     @Before
     public void setBaseUp() {

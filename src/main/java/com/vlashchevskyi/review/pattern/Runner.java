@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
  * Created by lvm on 2/6/17.
  */
 public class Runner {
-    private final int AMOUNT = 1000;
+    private int amount = 1000;
     private final ExecutorService pool;
     private final ReviewPrinter printer;
 
@@ -32,6 +32,7 @@ public class Runner {
         tasks.add(new GetTopItemsTask());
         tasks.add(new GetTopUsersTask());
         tasks.add(new GetTopWordsTask());
+        tasks.forEach(t->t.setTestMode(readTask.getTestMode()));
 
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));
@@ -44,10 +45,11 @@ public class Runner {
                 if (subject.getReadyCounter() == subject.getTasksAmount()) {
                     subject.start(readTask);
                 }
+                //System.out.println(subject.getReadyCounter() + " vs. " + subject.getTasksAmount());
             } while (fes.stream().anyMatch(f -> !f.isDone()));
         } finally {
             pool.shutdown();
-            printer.printAllWith(fes, AMOUNT);
+            printer.printAll(fes, amount);
         }
     }
 
@@ -59,6 +61,10 @@ public class Runner {
         wait(5000);
 
         return fes;
+    }
+
+    public void setAMOUNT(int amount) {
+        this.amount = amount;
     }
 
     public Runner() {

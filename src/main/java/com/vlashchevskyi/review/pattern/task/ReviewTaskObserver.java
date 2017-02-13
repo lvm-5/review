@@ -47,6 +47,9 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     public void setTestMode(boolean mode) {
         testMode = mode;
     }
+    public boolean getTestMode() {
+        return testMode;
+    }
 
     protected abstract T getResult();
 }

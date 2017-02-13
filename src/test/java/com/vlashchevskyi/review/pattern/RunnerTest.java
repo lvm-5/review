@@ -1,7 +1,7 @@
 package com.vlashchevskyi.review.pattern;
 
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Test;
 import tool.BaseTest;
 
 import static org.junit.Assert.assertTrue;
@@ -16,9 +16,10 @@ public class RunnerTest extends BaseTest {
     @Before
     public void setUp() {
         runner = new Runner();
+        runner.setAMOUNT(LIMIT);
     }
 
-    @Ignore
+    @Test
     public void testTrigger() {
         try {
             runner.trigger(getReadTask());
