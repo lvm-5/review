@@ -32,7 +32,7 @@ public class Runner {
         tasks.add(new GetTopItemsTask());
         tasks.add(new GetTopUsersTask());
         tasks.add(new GetTopWordsTask());
-        tasks.forEach(t->t.setTestMode(readTask.getTestMode()));
+        tasks.forEach(t -> t.setTestMode(readTask.getTestMode()));
 
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));
@@ -45,7 +45,6 @@ public class Runner {
                 if (subject.getReadyCounter() == subject.getTasksAmount()) {
                     subject.start(readTask);
                 }
-                //System.out.println(subject.getReadyCounter() + " vs. " + subject.getTasksAmount());
             } while (fes.stream().anyMatch(f -> !f.isDone()));
         } finally {
             pool.shutdown();
