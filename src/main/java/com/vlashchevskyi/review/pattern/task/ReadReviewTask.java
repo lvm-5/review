@@ -11,7 +11,7 @@ import java.util.List;
  * Created by lvm on 2/10/17.
  */
 public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver {
-    private final CsvReader reader;
+    private CsvReader reader;
     private T result;
     private MemoryCalc mCalc;
 
@@ -38,18 +38,18 @@ public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver
         return result;
     }
 
-
+    private void init(String pathToReview) throws IOException {
+        reader = new CsvReader(pathToReview);
+        reader.readHeaders();
+    }
     public ReadReviewTask(String pathToReview, long limitInMb) throws IOException {
-        this(pathToReview);
+        init(pathToReview);
         mCalc = new MemoryCalc(limitInMb);
     }
 
     public ReadReviewTask(String pathToReview) throws IOException {
-        reader = new CsvReader(pathToReview);
-        reader.readHeaders();
-        if (mCalc == null) {
-            mCalc = new MemoryCalc(500);
-        }
+        init(pathToReview);
+        mCalc = new MemoryCalc(500);
     }
 
 
