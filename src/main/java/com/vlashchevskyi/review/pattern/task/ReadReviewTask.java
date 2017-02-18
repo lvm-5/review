@@ -27,7 +27,7 @@ public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver
 
     public T read() throws Exception {
         T records = (T) new ArrayList<String[]>();
-        while (mCalc.isFreeMemory() && reader.readRecord()) {
+        while (mCalc.isFreeMemory() && reader.readRecord() && emulator.doToLimit(records)) {
             records.add(reader.getValues());
         }
         return records;

@@ -13,8 +13,6 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     private List<String[]> records;
     protected ReviewSubject subject;
 
-    private boolean testMode = false;
-
     @Override
     public T call() throws Exception {
         synchronized (this) {
@@ -22,7 +20,7 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
                 wait();
                 doAction();
                 subject.updateReadyCounter();
-            } while (records.size() > 0 && !testMode);
+            } while (records.size() > 0 && !emulator.getTestMode());
         }
         return getResult();
     }
@@ -42,13 +40,6 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     }
     public List<String[]> getRecords() {
         return records;
-    }
-
-    public void setTestMode(boolean mode) {
-        testMode = mode;
-    }
-    public boolean getTestMode() {
-        return testMode;
     }
 
     protected abstract T getResult();

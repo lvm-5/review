@@ -32,7 +32,6 @@ public class Runner {
         tasks.add(new GetTopItemsTask());
         tasks.add(new GetTopUsersTask());
         tasks.add(new GetTopWordsTask());
-        tasks.forEach(t -> t.setTestMode(readTask.getTestMode()));
 
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));

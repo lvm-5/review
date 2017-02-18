@@ -1,27 +1,18 @@
 package com.vlashchevskyi.review.pattern.task;
 
-import org.junit.Before;
 import org.junit.Test;
+import tool.BaseTest;
 
-import java.io.IOException;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by lvm on 2/13/17.
  */
-public class ReadReviewTaskTest {
-    private ReadReviewTask task;
-
-    @Before
-    public void setUp() throws IOException {
-        task = new ReadReviewTask("Reviews.csv", 500);
-        task.setTestMode(true);
-    }
+public class ReadReviewTaskTest extends BaseTest{
     @Test
-    public void testRead() throws Exception {
+    public  void readTask() throws Exception {
         assertNotNull(task);
-        assertTrue(task.read().size() > 0);
+        assertEquals(ReadReviewTask.emulator.getLimit(), task.read().size());
     }
 }
