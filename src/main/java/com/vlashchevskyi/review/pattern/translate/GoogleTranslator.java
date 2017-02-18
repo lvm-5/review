@@ -1,24 +1,20 @@
 package com.vlashchevskyi.review.pattern.translate;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
  * Created by lvm on 2/16/17.
  */
 public class GoogleTranslator {
-    List<String> reviews = new ArrayList<>();
-    List<String> translates = new ArrayList<>();
+    private ExecutorService pool = Executors.newFixedThreadPool(2);
     private int connectionLimit = 100;
-    private int counter;
 
-    public void doTranslate() {
-        counter = 0;
-        reviews.parallelStream().forEach(review->{
-            //translates.add(clt.translate);
-        });
+    public void doTranslate(String pathToReviews) throws Exception {
+        ReadReviewTask readTask = new ReadReviewTask(pathToReviews);
+        //TranslateTask translateTask = new TranslateTask();
     }
-
-
 }

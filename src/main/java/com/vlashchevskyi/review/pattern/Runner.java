@@ -4,8 +4,9 @@ import com.vlashchevskyi.review.pattern.task.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -14,55 +15,50 @@ import java.util.concurrent.Future;
  * Created by lvm on 2/6/17.
  */
 public class Runner {
-    private int amount = 1000;
+    private int topAmount = 1000;
     private final ExecutorService pool;
     private final ReviewPrinter printer;
 
     public static void main(String[] args) {
+        new Runner().handle("Reviews.csv");
+    }
+
+    public boolean handle(String pathToReviews) {
+        boolean status = false;
+
         try {
-            new Runner().trigger(new ReadReviewTask("Reviews.csv"));
-        } catch (Exception e) {
+            List<ReviewTaskObserver> tasks = prepareTasks(pathToReviews);
+            List<Future> result = new Trigger(tasks.size()).trigger(tasks);
+            print(result);
+            status = true;
+        }catch (Exception e) {
             e.printStackTrace();
         }
+
+        return status;
     }
 
-    public void trigger(ReviewTaskObserver readTask) throws IOException, ExecutionException, InterruptedException {
+    private List<ReviewTaskObserver> prepareTasks(String pathToReviews) throws IOException {
         List<ReviewTaskObserver> tasks = new ArrayList<>();
-        tasks.add(readTask);
-        tasks.add(new GetTopItemsTask());
-        tasks.add(new GetTopUsersTask());
-        tasks.add(new GetTopWordsTask());
+        tasks.add(new ReadReviewTask(pathToReviews));
+        tasks.add(new GetTopUsersTask());       // Task #1
+        tasks.add(new GetTopItemsTask());       // Task #2
+        tasks.add(new GetTopWordsTask());       // Task #3
 
-        ReviewSubject subject = new ReviewSubject();
-        tasks.forEach(t -> subject.addTask(t));
-
-        List<Future> fes = null;
-        try {
-            fes = submit(tasks);
-            subject.start(readTask);
-            do {
-                if (subject.getReadyCounter() == subject.getTasksAmount()) {
-                    subject.start(readTask);
-                }
-            } while (fes.stream().anyMatch(f -> !f.isDone()));
-        } finally {
-            pool.shutdown();
-            printer.printAll(fes, amount);
-        }
+        return tasks;
     }
 
-    private synchronized List<Future> submit(List<ReviewTaskObserver> tasks) throws InterruptedException {
-        List<Future> fes = new ArrayList<>();
-        tasks.forEach(t -> {
-            fes.add(pool.submit(t));
-        });
-        wait(5000);
+    private void print(List<Future> result) {
+        Map<String, Future> subjects = new LinkedHashMap<>();
 
-        return fes;
+        subjects.put("Top of the most active users", result.get(1));
+        subjects.put("Top of the most commented products", result.get(2));
+        subjects.put("Top of the most used words", result.get(3));
+        printer.printAll(subjects, topAmount);
     }
 
     public void setAMOUNT(int amount) {
-        this.amount = amount;
+        this.topAmount = amount;
     }
 
     public Runner() {

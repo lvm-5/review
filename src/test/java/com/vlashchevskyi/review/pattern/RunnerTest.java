@@ -6,7 +6,7 @@ import tool.BaseTest;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * Created by lvm on 2/13/17.
@@ -23,13 +23,6 @@ public class RunnerTest extends BaseTest {
 
     @Test
     public void testTrigger() {
-        try {
-            runner.trigger(task);
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
-        }
-
-        assertTrue(true);
+        assertTrue(runner.handle("Reviews.csv"));
     }
 }
