@@ -1,8 +1,6 @@
 package com.vlashchevskyi.review.pattern.translate;
 
-import com.google.cloud.RetryParams;
 import com.google.cloud.translate.Translate;
-import com.google.cloud.translate.TranslateOptions;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
 import java.util.*;
@@ -19,7 +17,6 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.TEXT_COLUMN;
 public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>{
     public static final int CONNECTION_LIMIT = 100;
     private static final ReviewSplitter splitter = new ReviewSplitter();
-
 
     private Translate service;
     private final ExecutorService pool;
@@ -43,14 +40,34 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
             }
         }while(requests.size() > 0);
 
-        targetReviews = translate(sourceReviews, dictionary);
+        T targetReviews = translate(sourceReviews, dictionary);
+        aggregate(targetReviews);
 
         return targetReviews;
     }
 
-    private T translate(List<String> reviews, Map<String, String> dictionary) {
+    private void aggregate(T currentReviews) {
+        targetReviews.addAll(currentReviews);
+    }
 
-        return null;
+
+
+    //TODO: make more effective
+    private T translate(List<String> reviews, Map<String, String> dictionary) {
+        T target = (T) new ArrayList<String>();
+
+        reviews.parallelStream().forEach(r->{
+            String review = r;
+            Set<String> phrases = splitter.split2Phrases(r);
+            Iterator<String> it = phrases.iterator();
+            while (it.hasNext()) {
+                String p = it.next();
+                review = review.replaceAll(p, dictionary.get(p));
+            }
+            target.add(review);
+        });
+
+        return target;
     }
 
     private synchronized List<Future<Map<String,String>>> doRequests(List<TranslateRequestTask<Map<String, String>>> requests) throws InterruptedException {
@@ -72,33 +89,6 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
         });
     }
 
-
-    /**
-     * Create Google Translate API Service.
-     *
-     * @return Google Translate Service
-     */
-    public static Translate createTranslateService() {
-        TranslateOptions translateOption = TranslateOptions.newBuilder()
-                .setRetryParams(retryParams())
-                .setConnectTimeout(60000)
-                .setReadTimeout(60000)
-                .build();
-        return translateOption.getService();
-    }
-
-    /**
-     * Retry params for the Translate API.
-     */
-    private static RetryParams retryParams() {
-        return RetryParams.newBuilder()
-                .setRetryMaxAttempts(3)
-                .setMaxRetryDelayMillis(30000)
-                .setTotalRetryPeriodMillis(120000)
-                .setInitialRetryDelayMillis(250)
-                .build();
-    }
-
     @Override
     public T doAction() throws Exception {
         return doTranslate();
@@ -106,11 +96,11 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
 
     @Override
     protected T getResult() {
-        return null;
+        return targetReviews;
     }
 
-    public TranslateTask() {
+    public TranslateTask(Translate service) {
         pool = Executors.newFixedThreadPool(CONNECTION_LIMIT);
-        service = createTranslateService();
+        this.service = service;
     }
 }

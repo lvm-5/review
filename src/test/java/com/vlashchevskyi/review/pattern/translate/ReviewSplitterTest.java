@@ -122,11 +122,11 @@ public class ReviewSplitterTest extends BaseTest {
 
     }
 
-    private void isPhraseOk(String sentence, int amount, String phrase)  {
+    private void isPhraseOk(String sentence, int phraseAmount, String phrase)  {
         Set<String> res = splitter.split2Phrases(sentence);
         System.out.println(res);
 
-        assertEquals(amount, res.size());
+        assertEquals(phraseAmount, res.size());
         assertTrue(res.contains(phrase));
     }
 }

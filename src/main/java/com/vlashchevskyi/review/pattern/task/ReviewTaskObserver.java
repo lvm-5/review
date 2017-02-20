@@ -43,6 +43,5 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
         return records.parallelStream();
     }
 
-
     protected abstract T getResult();
 }

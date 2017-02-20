@@ -1,5 +1,8 @@
 package com.vlashchevskyi.review.pattern.translate;
 
+import com.google.cloud.RetryParams;
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
 import com.vlashchevskyi.review.pattern.Trigger;
 import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
@@ -16,7 +19,34 @@ public class GoogleTranslator {
     public void doTranslate(String pathToReviews) throws Exception {
         List<ReviewTaskObserver> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
-        tasks.add(new TranslateTask());
+        tasks.add(new TranslateTask(createTranslateService()));
         new Trigger(tasks.size()).trigger(tasks);
+    }
+
+    /**
+     * Create Google Translate API Service.
+     *
+     * @return Google Translate Service
+     */
+    public static Translate createTranslateService() {
+        TranslateOptions translateOption = TranslateOptions.newBuilder()
+                .setTargetLanguage("fr")
+                .setRetryParams(retryParams())
+                .setConnectTimeout(60000)
+                .setReadTimeout(60000)
+                .build();
+        return translateOption.getService();
+    }
+
+    /**
+     * Retry params for the Translate API.
+     */
+    private static RetryParams retryParams() {
+        return RetryParams.newBuilder()
+                .setRetryMaxAttempts(3)
+                .setMaxRetryDelayMillis(30000)
+                .setTotalRetryPeriodMillis(120000)
+                .setInitialRetryDelayMillis(250)
+                .build();
     }
 }
