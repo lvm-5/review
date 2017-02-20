@@ -5,7 +5,7 @@ package com.vlashchevskyi.review.pattern.translate;
  */
 public interface SplitterConstants {
     String BLOCK_SPLITTER = ".";
-    String REVIEW_SPLITTER = "[^\\w^\\s]";
+    String REVIEW_SPLITTER = "[^\\w^\\s^'^\\d]";
     int BLOCK_SPLITTER_SIZE = BLOCK_SPLITTER.length();
     int BLOCK_SIZE = 1000;
 }

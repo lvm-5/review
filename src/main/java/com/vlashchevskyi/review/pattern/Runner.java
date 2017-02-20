@@ -1,44 +1,74 @@
 package com.vlashchevskyi.review.pattern;
 
 import com.vlashchevskyi.review.pattern.task.*;
+import com.vlashchevskyi.review.pattern.translate.GoogleTranslator;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * Created by lvm on 2/6/17.
  */
 public class Runner {
     private int topAmount = 1000;
+    private String pathToReviews;
+
     private final ExecutorService pool;
     private final ReviewPrinter printer;
 
+    private static final String TRANSLATE = "translate";
+    private static final String PATH = "pathToReviews";
+
+
     public static void main(String[] args) {
-        new Runner().handle("Reviews.csv");
+        Map<String, String> as = Arrays
+                .stream(args)
+                .map(a -> a.split("="))
+                .collect(Collectors.toMap(a -> a[0], a -> a[1]));
+
+        String path = as.get(PATH);
+        path = (path == null) ? "Reviews.csv" : path;
+        Boolean translate = Boolean.valueOf(as.get(TRANSLATE));
+
+        new Runner(path).handle(translate);
     }
 
-    public boolean handle(String pathToReviews) {
-        boolean status = false;
+    public boolean handle(boolean translateFlag) {
+        boolean status;
 
         try {
-            List<ReviewTaskObserver> tasks = prepareTasks(pathToReviews);
-            List<Future> result = new Trigger(tasks.size()).trigger(tasks);
-            print(result);
-            status = true;
-        }catch (Exception e) {
+            status = calculateTop();
+            status = translateFlag
+                    ? translate()
+                    : status;
+        } catch (Exception e) {
+            status = false;
             e.printStackTrace();
         }
 
         return status;
     }
 
-    private List<ReviewTaskObserver> prepareTasks(String pathToReviews) throws IOException {
+    private boolean calculateTop() throws InterruptedException, ExecutionException, IOException {
+        List<ReviewTaskObserver> tasks = prepareTasks();
+        List<Future> result = new Trigger(tasks.size()).trigger(tasks);
+        print(result);
+
+        return true;
+    }
+
+    private boolean translate() throws Exception {
+        new GoogleTranslator().doTranslate(pathToReviews);
+
+        return true;
+    }
+
+    private List<ReviewTaskObserver> prepareTasks() throws IOException {
         List<ReviewTaskObserver> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
         tasks.add(new GetTopUsersTask());       // Task #1
@@ -61,8 +91,10 @@ public class Runner {
         this.topAmount = amount;
     }
 
-    public Runner() {
+    public Runner(String pathToReviews) {
         pool = Executors.newFixedThreadPool(5);
         printer = new ReviewPrinter();
+        this.pathToReviews = pathToReviews;
+
     }
 }

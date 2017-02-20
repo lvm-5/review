@@ -17,12 +17,17 @@ public class RunnerTest extends BaseTest {
 
     @Before
     public void setItUp() throws IOException {
-        runner = new Runner();
+        runner = new Runner("Reviews.csv");
         runner.setAMOUNT(10);
     }
 
     @Test
     public void testTrigger() {
-        assertTrue(runner.handle("Reviews.csv"));
+        assertTrue(runner.handle(false));
+    }
+
+    @Test
+    public void testTrigger_Translate() {
+        assertTrue(runner.handle(true));
     }
 }
