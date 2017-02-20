@@ -1,20 +1,22 @@
 package com.vlashchevskyi.review.pattern.translate;
 
+import com.vlashchevskyi.review.pattern.Trigger;
 import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
+import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * Created by lvm on 2/16/17.
  */
 public class GoogleTranslator {
-    private ExecutorService pool = Executors.newFixedThreadPool(2);
-    private int connectionLimit = 100;
 
     public void doTranslate(String pathToReviews) throws Exception {
-        ReadReviewTask readTask = new ReadReviewTask(pathToReviews);
-        //TranslateTask translateTask = new TranslateTask();
+        List<ReviewTaskObserver> tasks = new ArrayList<>();
+        tasks.add(new ReadReviewTask(pathToReviews));
+        tasks.add(new TranslateTask());
+        new Trigger(tasks.size()).trigger(tasks);
     }
 }

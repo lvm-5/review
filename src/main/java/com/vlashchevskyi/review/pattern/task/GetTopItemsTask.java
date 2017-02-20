@@ -32,13 +32,13 @@ public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTask
 
     protected T sumByColumn(int column) {
         T statistics = (T) new HashMap<K, Integer>();
-        for (String[] record : getRecords()) {
+        getRecords().forEach(record-> {
             String itemID = record[column];
             Integer sum = statistics.get(itemID);
             sum = (sum == null)? 1
                     : ++sum;
             statistics.put((K)itemID, sum);
-        }
+        });
 
         return statistics;
     }

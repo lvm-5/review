@@ -16,7 +16,10 @@ import java.util.concurrent.Future;
 public class Trigger {
     private final ExecutorService pool;
 
+
     public List<Future> trigger(List<ReviewTaskObserver> tasks) throws IOException, ExecutionException, InterruptedException {
+
+        // starter task should be first
         ReviewTaskObserver starter = tasks.get(0);
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));

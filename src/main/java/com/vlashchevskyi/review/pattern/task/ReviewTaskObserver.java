@@ -4,6 +4,7 @@ package com.vlashchevskyi.review.pattern.task;
 import com.vlashchevskyi.review.pattern.ReviewSubject;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Created by lvm on 2/11/17.
@@ -38,9 +39,10 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
             }
         }
     }
-    public List<String[]> getRecords() {
-        return records;
+    public Stream<String[]> getRecords() {
+        return records.parallelStream();
     }
+
 
     protected abstract T getResult();
 }

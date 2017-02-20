@@ -24,12 +24,12 @@ public class GetTopUsersTask<U, T extends Map<User, Integer>> extends GetTopItem
     @Override
     protected T sumByColumn(int column) {
         T statistics = (T) new HashMap<User, Integer>();
-        for (String[] record : getRecords()) {
+        getRecords().forEach(record -> {
             User ur = new User(record[column], record[PROFILE_COLUMN]);
             Integer sum = statistics.get(ur);
             sum = (sum == null) ? 1 : ++sum;
             statistics.put(ur, sum);
-        }
+        });
 
         return statistics;
     }
