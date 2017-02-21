@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
-import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK_SIZE;
 import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK_SPLITTER_SIZE;
 import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.REVIEW_SPLITTER;
 
@@ -12,6 +11,8 @@ import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.REVIE
  * Created by lvm on 2/16/17.
  */
 public class ReviewSplitter {
+    private int blockSize = 1000;
+
     public Set<String> split2Phrases(String review) {
         String[] phrases = review.split(REVIEW_SPLITTER);
         return Arrays.stream(phrases).map(p -> p.trim()).filter(p -> !p.isEmpty()).collect(Collectors.toSet());
@@ -30,7 +31,7 @@ public class ReviewSplitter {
     public List<List<String>> split2Blocks(Set<String> phrases) {
         List<List<String>> blocks = new ArrayList();
         while (phrases.size() > 0) {
-            List<String> block = buildBlock(phrases.stream().collect(Collectors.toList()), BLOCK_SIZE);
+            List<String> block = buildBlock(phrases.stream().collect(Collectors.toList()), blockSize);
             blocks.add(block);
             phrases = phrases.stream().filter(p->!block.contains(p)).collect(Collectors.toSet());
         }
@@ -78,5 +79,13 @@ public class ReviewSplitter {
         }
 
         return block;
+    }
+
+    public int getBlockSize() {
+        return blockSize;
+    }
+
+    public void setBlockSize(int blockSize) {
+        this.blockSize = blockSize;
     }
 }

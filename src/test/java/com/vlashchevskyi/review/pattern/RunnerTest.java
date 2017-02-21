@@ -1,5 +1,6 @@
 package com.vlashchevskyi.review.pattern;
 
+import com.vlashchevskyi.wsmock.AppRunner;
 import org.junit.Before;
 import org.junit.Test;
 import tool.BaseTest;
@@ -28,6 +29,9 @@ public class RunnerTest extends BaseTest {
 
     @Test
     public void testTrigger_Translate() {
+        AppRunner.main(new String[]{});
         assertTrue(runner.handle(true));
     }
 }
+
+

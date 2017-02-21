@@ -6,6 +6,7 @@ import com.google.cloud.translate.TranslateOptions;
 import com.vlashchevskyi.review.pattern.Trigger;
 import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
+import com.vlashchevskyi.review.pattern.test.Emulator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +15,13 @@ import java.util.List;
 /**
  * Created by lvm on 2/16/17.
  */
-public class GoogleTranslator {
+public class GoogleTranslator implements Emulator {
+    private int connetionLimit;
 
     public void doTranslate(String pathToReviews) throws Exception {
         List<ReviewTaskObserver> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
-        tasks.add(new TranslateTask(createTranslateService()));
+        tasks.add(new TranslateTask(createTranslateService(), connetionLimit));
         new Trigger(tasks.size()).trigger(tasks);
     }
 
@@ -30,11 +32,12 @@ public class GoogleTranslator {
      */
     public static Translate createTranslateService() {
         TranslateOptions translateOption = TranslateOptions.newBuilder()
-                .setTargetLanguage("fr")
+                .setHost(emulator.getHost())
                 .setRetryParams(retryParams())
                 .setConnectTimeout(60000)
                 .setReadTimeout(60000)
                 .build();
+
         return translateOption.getService();
     }
 
@@ -48,5 +51,9 @@ public class GoogleTranslator {
                 .setTotalRetryPeriodMillis(120000)
                 .setInitialRetryDelayMillis(250)
                 .build();
+    }
+
+    public GoogleTranslator() {
+        connetionLimit = 100;
     }
 }

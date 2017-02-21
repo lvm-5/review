@@ -14,6 +14,7 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     private List<String[]> records;
     protected ReviewSubject subject;
 
+
     @Override
     public T call() throws Exception {
         synchronized (this) {
@@ -44,4 +45,7 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
     }
 
     protected abstract T getResult();
+
+    public ReviewTaskObserver() {
+    }
 }

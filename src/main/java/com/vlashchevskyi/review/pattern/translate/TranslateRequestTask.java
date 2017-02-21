@@ -2,6 +2,8 @@ package com.vlashchevskyi.review.pattern.translate;
 
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.Translation;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,8 +17,15 @@ import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK
  */
 public class TranslateRequestTask<T extends Map<String, String>> implements Callable<T> {
 
+    private final Translate.TranslateOption srcLang;
+    private final Translate.TranslateOption trgtLang;
     private final List<String> block;
     private final Translate service;
+    private static final Logger logger = Logger.getLogger("com.vlashchevskyi.review.pattern.translate");
+
+    static {
+        logger.setLevel(Level.WARN);
+    }
 
     @Override
     public T call() throws Exception {
@@ -33,7 +42,8 @@ public class TranslateRequestTask<T extends Map<String, String>> implements Call
     }
 
     private String translate(String message) {
-        Translation translation = service.translate(message);
+
+        Translation translation = service.translate(message, srcLang, trgtLang);
         return translation.getTranslatedText();
     }
 
@@ -41,15 +51,21 @@ public class TranslateRequestTask<T extends Map<String, String>> implements Call
         T dictionary = (T)new HashMap<String, String>();
         String[] translates = translate.split(BLOCK_SPLITTER);
 
-        for (int i = 0; i < block.size(); i++) {
-            dictionary.put(block.get(i), translates[i]);
+        if (translates.length == block.size()) {
+            for (int i = 0; i < block.size(); i++) {
+                dictionary.put(block.get(i), translates[i]);
+            }
+        } else {
+            logger.warn("translation isn't equaled to source");
         }
 
         return dictionary;
     }
 
-    public TranslateRequestTask(List<String> block, Translate service) {
+    public TranslateRequestTask(List<String> block, Translate service, Translate.TranslateOption srcLang, Translate.TranslateOption trgtLang) {
         this.block = block;
         this.service = service;
+        this.srcLang = srcLang;
+        this.trgtLang = trgtLang;
     }
 }

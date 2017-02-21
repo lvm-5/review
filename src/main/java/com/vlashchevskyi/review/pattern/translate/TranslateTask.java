@@ -14,31 +14,32 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.TEXT_COLUMN;
 /**
  * Created by lvm on 2/17/17.
  */
-public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>{
-    public static final int CONNECTION_LIMIT = 100;
+public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T> {
     private static final ReviewSplitter splitter = new ReviewSplitter();
 
-    private Translate service;
+    private final Translate.TranslateOption srcLang;
+    private final Translate.TranslateOption trgtLang;
     private final ExecutorService pool;
+
+    private int connectionLimit;
+    private Translate service;
     private T sourceReviews;
-    private T targetReviews = (T)new ArrayList<String>();
+    private T targetReviews = (T) new ArrayList<String>();
 
     public T doTranslate() throws InterruptedException {
-        sourceReviews = (T)getRecords().map(r->r[TEXT_COLUMN]).collect(Collectors.toList());
+        sourceReviews = (T) getRecords().map(r -> r[TEXT_COLUMN]).collect(Collectors.toList());
         Set<String> phrases = splitter.split2Phrases(sourceReviews);
         List<List<String>> blocks = splitter.split2Blocks(phrases);
 
-        List<TranslateRequestTask<Map<String, String>>> requests;
+        List<TranslateRequestTask<Map<String, String>>> requests = new ArrayList<>();
         Map<String, String> dictionary = new HashMap<>();
-        do {
-            requests = new ArrayList<>();
-            for (int i = 0; i < blocks.size(); i++) {
-                requests.add(new TranslateRequestTask(blocks.get(i), service));
-                if (requests.size() == CONNECTION_LIMIT) {
-                    fillDictionary(doRequests(requests), dictionary);
-                }
+        for (int i = 0; i < blocks.size(); i++) {
+            requests.add(new TranslateRequestTask(blocks.get(i), service, srcLang, trgtLang));
+            if (requests.size() == connectionLimit || i == blocks.size() - 1) {
+                fillDictionary(doRequests(requests), dictionary);
+                requests = new ArrayList<>();
             }
-        }while(requests.size() > 0);
+        }
 
         T targetReviews = translate(sourceReviews, dictionary);
         aggregate(targetReviews);
@@ -46,17 +47,25 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
         return targetReviews;
     }
 
+    private synchronized List<Future<Map<String, String>>> doRequests(List<TranslateRequestTask<Map<String, String>>> requests) throws InterruptedException {
+        List<Future<Map<String, String>>> fes = pool.invokeAll(requests);
+        while (fes.stream().anyMatch(f -> !f.isDone())) {
+            wait(200);
+        }
+
+        return fes;
+    }
+
     private void aggregate(T currentReviews) {
         targetReviews.addAll(currentReviews);
     }
-
 
 
     //TODO: make more effective
     private T translate(List<String> reviews, Map<String, String> dictionary) {
         T target = (T) new ArrayList<String>();
 
-        reviews.parallelStream().forEach(r->{
+        reviews.parallelStream().forEach(r -> {
             String review = r;
             Set<String> phrases = splitter.split2Phrases(r);
             Iterator<String> it = phrases.iterator();
@@ -70,16 +79,7 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
         return target;
     }
 
-    private synchronized List<Future<Map<String,String>>> doRequests(List<TranslateRequestTask<Map<String, String>>> requests) throws InterruptedException {
-        List<Future<Map<String,String>>> fes = pool.invokeAll(requests);
-        while(fes.stream().anyMatch(f->!f.isDone())) {
-            wait(200);
-        }
-
-        return fes;
-    }
-
-    private void fillDictionary(List<Future<Map<String,String>>> fes, Map<String, String> dictionary) {
+    private void fillDictionary(List<Future<Map<String, String>>> fes, Map<String, String> dictionary) {
         fes.forEach(f -> {
             try {
                 dictionary.putAll(f.get());
@@ -99,8 +99,11 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
         return targetReviews;
     }
 
-    public TranslateTask(Translate service) {
-        pool = Executors.newFixedThreadPool(CONNECTION_LIMIT);
+    public TranslateTask(Translate service, int connectionLimit) {
         this.service = service;
+        this.connectionLimit = connectionLimit;
+        pool = Executors.newFixedThreadPool(this.connectionLimit);
+        srcLang = Translate.TranslateOption.sourceLanguage("en");
+        trgtLang = Translate.TranslateOption.targetLanguage("fr");
     }
 }
