@@ -1,7 +1,5 @@
 package com.vlashchevskyi.review.pattern.test;
 
-import com.google.cloud.translate.TranslateOptions;
-
 import java.util.Collection;
 
 /**
@@ -38,7 +36,7 @@ public class TestEmulator {
             return host;
         }
 
-        return TranslateOptions.getDefaultInstance().getHost();
+        return host; //TranslateOptions.getDefaultInstance().getHost();
     }
 
     public void setTestMode(boolean mode) {
