@@ -42,12 +42,6 @@ main = 'com.vlashchevskyi.wsmock.AppRunner'
 
 }
 
-test {
-    reports {
-        junitXml.enabled = false
-        html.enabled = true
-    }               
-}
 
 task runReviewAnalyzingWithTranslate(type: JavaExec) {
 
@@ -57,6 +51,12 @@ args 'translate=true'
 
 }
 
+test {
+    reports {
+        junitXml.enabled = false
+        html.enabled = true
+    }
+}
 
 jar {
     baseName = 'wsmock'
