@@ -35,6 +35,20 @@ main = 'com.vlashchevskyi.review.pattern.Runner'
 
 }
 
+task runWS(type: JavaExec) {
+
+classpath = sourceSets.main.runtimeClasspath  
+main = 'com.vlashchevskyi.wsmock.AppRunner'
+
+}
+
+test {
+    reports {
+        junitXml.enabled = false
+        html.enabled = true
+    }               
+}
+
 task runReviewAnalyzingWithTranslate(type: JavaExec) {
 
 classpath = sourceSets.main.runtimeClasspath  
