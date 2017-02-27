@@ -1,6 +1,6 @@
 package com.vlashchevskyi.review.pattern;
 
-import com.vlashchevskyi.review.pattern.task.*;
+import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,19 +17,19 @@ public class Trigger {
     private final ExecutorService pool;
 
 
-    public List<Future> trigger(List<ReviewTaskObserver> tasks) throws IOException, ExecutionException, InterruptedException {
+    public synchronized List<Future<Object>> trigger(List<ReviewTaskObserver<Object>> tasks) throws IOException, ExecutionException, InterruptedException {
 
         // starter task should be first
         ReviewTaskObserver starter = tasks.get(0);
         ReviewSubject subject = new ReviewSubject();
         tasks.forEach(t -> subject.addTask(t));
 
-        List<Future> fes = null;
+        List<Future<Object>> fes = null;
+        Delay dl = new Delay();
         try {
             fes = submit(tasks);
-            subject.start(starter);
             do {
-                if (subject.getReadyCounter() == subject.getTasksAmount()) {
+                if (!dl.doPauseIf(subject.getReadyCounter() != subject.getTasksAmount())) {
                     subject.start(starter);
                 }
             } while (fes.stream().anyMatch(f -> !f.isDone()));
@@ -40,12 +40,9 @@ public class Trigger {
         return fes;
     }
 
-    private synchronized List<Future> submit(List<ReviewTaskObserver> tasks) throws InterruptedException {
-        List<Future> fes = new ArrayList<>();
-        tasks.forEach(t -> {
-            fes.add(pool.submit(t));
-        });
-        wait(5000);
+    private synchronized List<Future<Object>> submit(List<ReviewTaskObserver<Object>> tasks) throws InterruptedException {
+        List<Future<Object>> fes = new ArrayList<>();
+        tasks.forEach(t->fes.add(pool.submit(t)));
 
         return fes;
     }

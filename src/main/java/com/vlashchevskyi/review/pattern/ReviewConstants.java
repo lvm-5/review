@@ -9,4 +9,5 @@ public interface ReviewConstants {
     byte PROFILE_COLUMN = 3;
     byte SUMMARY_COLUMN = 8;
     byte TEXT_COLUMN = 9;
+    long MEMORY_LIMIT = 500;
 }

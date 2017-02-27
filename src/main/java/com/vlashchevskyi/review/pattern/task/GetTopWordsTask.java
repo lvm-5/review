@@ -1,5 +1,6 @@
 package com.vlashchevskyi.review.pattern.task;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,21 +11,23 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.TEXT_COLUMN;
  * Created by lvm on 2/10/17.
  */
 public class GetTopWordsTask<T extends Map<String, Integer>> extends GetTopItemsTask {
+    public static final String PATTERN = "\\W|\\d";
 
     @Override
     public T analyze() {
-        final String PATTERN = "\\W|\\d";
-        final T wordStatistics = (T) new HashMap<String, Integer>();
 
-        getRecords().forEach(record -> {;
-            String body = getReviewText((String[])record);
-            String[] words = body.toLowerCase().split(PATTERN);
-            for (String word : words) {
-                if (!word.isEmpty()) {
-                    Integer sum = (wordStatistics.get(word));
-                    wordStatistics.put(word, (sum == null) ? 1: ++sum);
-                }
-            }
+        final T wordStatistics = (T) new HashMap();
+
+        getRecords().forEach(record -> {
+            String body = getReviewText((String[]) record);
+            Arrays.stream(body.toLowerCase().split(PATTERN))
+                    .forEach(word -> {
+                        if (!word.isEmpty()) {
+                            Integer sum = (wordStatistics.get(word));
+                            sum = (sum == null)? 1: ++sum;
+                            wordStatistics.put(word, sum);
+                        }
+                    });
         });
 
         return wordStatistics;

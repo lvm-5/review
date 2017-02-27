@@ -59,8 +59,8 @@ test {
 }
 
 jar {
-    baseName = 'wsmock'
-    version = '0.0.0'
+    baseName = 'review'
+    version = '0.0.1'
 }
 
 

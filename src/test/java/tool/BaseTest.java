@@ -13,6 +13,7 @@ import static com.vlashchevskyi.review.pattern.test.Emulator.emulator;
  */
 public class BaseTest {
     protected ReadReviewTask task;
+    protected static String pathToReviews = "Reviews.csv";
     private static final int RECORDS_AMOUNT = 100;
 
     public BaseTest() {
@@ -31,7 +32,7 @@ public class BaseTest {
     @Before
     public void baseSetUp() {
         try {
-            task = new ReadReviewTask("Reviews.csv", 500);
+            task = new ReadReviewTask(pathToReviews);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -3,7 +3,6 @@ package com.vlashchevskyi.review.pattern;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
 
 /**
  * Created by lvm on 2/12/17.
@@ -20,18 +19,13 @@ public class ReviewPrinter {
         });
     }
 
-    <K, V, U extends Map.Entry<K, V>, T extends Stream<U>> void print(Future<T> fe, int amount, String subject) throws ExecutionException, InterruptedException {
+     <K extends Comparable, V, T extends Map<K, V>> void print(Future<T> fe, int amount, String subject) throws ExecutionException, InterruptedException {
         System.out.println(subject + "\n--");
-        fe.get().limit(amount).map(e->e.getKey()).sorted().
-                forEach(e -> System.out.println(e));
-        System.out.println();
-
-    }
-
-    <K, V, U extends Map.Entry<K, V>, T extends Stream<U>> void printWithStat(Future<T> fe, int amount, String subject) throws ExecutionException, InterruptedException {
-        System.out.println(subject + "\n--");
-        fe.get().limit(amount).
-                forEach(e -> System.out.println(e));
+        fe.get().entrySet()
+                .stream()
+                .limit(amount)
+                .sorted((e1, e2)-> e1.getKey().compareTo(e2.getKey()))
+                .forEach((e) -> System.out.println(e.getKey()));
         System.out.println();
 
     }

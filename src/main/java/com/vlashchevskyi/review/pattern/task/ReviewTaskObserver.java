@@ -4,24 +4,26 @@ package com.vlashchevskyi.review.pattern.task;
 import com.vlashchevskyi.review.pattern.ReviewSubject;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Created by lvm on 2/11/17.
  */
-public abstract class ReviewTaskObserver<T> implements ReviewTask {
+public abstract class ReviewTaskObserver<T> implements ReviewTask<T> {
 
     private List<String[]> records;
     protected ReviewSubject subject;
-
 
     @Override
     public T call() throws Exception {
         synchronized (this) {
             do {
-                wait();
-                doAction();
                 subject.updateReadyCounter();
+                wait();
+                try {
+                    doAction();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
             } while (records.size() > 0 && !emulator.getTestMode());
         }
         return getResult();
@@ -40,8 +42,8 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask {
             }
         }
     }
-    public Stream<String[]> getRecords() {
-        return records.parallelStream();
+    public List<String[]> getRecords() {
+        return records;
     }
 
     protected abstract T getResult();

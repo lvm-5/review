@@ -1,5 +1,7 @@
 package com.vlashchevskyi.review.pattern.test;
 
+import com.vlashchevskyi.review.pattern.ReviewConstants;
+
 import java.util.Collection;
 
 /**
@@ -8,23 +10,15 @@ import java.util.Collection;
 public class TestEmulator {
     private boolean testMode;
     private int limit;
+    private long memoryLimit = 500;
     private String host;
 
-    public TestEmulator() {
-        host = "http://api.google.com:8080";
-        limit = 10;
-        testMode = false;
-    }
-
-
-    public boolean doToLimit(Collection records) {
-        boolean status = true;
-
+    public boolean isLimit(Collection records) {
         if (testMode) {
-            status = !(records.size() >= limit);
+            return records.size() >= limit;
+        } else {
+            return false;
         }
-
-        return status;
     }
 
     public void setHost(String host) {
@@ -55,4 +49,22 @@ public class TestEmulator {
         return limit;
     }
 
+    public long getMemoryLimit(){
+        if (testMode) {
+            return memoryLimit;
+        }
+        else {
+            return ReviewConstants.MEMORY_LIMIT;
+        }
+    }
+
+    public void setMemoryLimit(long inMb) {
+        memoryLimit = inMb;
+    }
+
+    public TestEmulator() {
+        host = "http://api.google.com:8080";
+        limit = 10;
+        testMode = false;
+    }
 }

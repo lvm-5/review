@@ -2,13 +2,14 @@ package com.vlashchevskyi.review.pattern.task;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static com.vlashchevskyi.review.pattern.ReviewConstants.PRODUCT_ID_COLUMN;
 
 /**
  * Created by lvm on 2/10/17.
  */
-public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTaskObserver<U> {
+public class GetTopItemsTask<K, T extends Map<K, Integer>> extends ReviewTaskObserver<T> {
     private final T topItems;
 
     @Override
@@ -44,11 +45,13 @@ public class GetTopItemsTask<K, U, T extends Map<K, Integer>> extends ReviewTask
     }
 
     @Override
-    protected U getResult() {
-        return (U) topItems.entrySet().stream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+    protected T getResult() {
+        T result = (T) new TreeMap<K, Integer>((k1,k2)-> topItems.get(k2).compareTo(topItems.get(k1)));
+        result.putAll(topItems);
+        return result;
     }
 
-    public T getTopItems() {
+    protected T getTopItems() {
         return topItems;
     }
 

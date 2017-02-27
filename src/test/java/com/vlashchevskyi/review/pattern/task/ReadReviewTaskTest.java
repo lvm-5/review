@@ -9,9 +9,12 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by lvm on 2/13/17.
  */
+
+
 public class ReadReviewTaskTest extends BaseTest{
+
     @Test
-    public  void readTask() throws Exception {
+    public void readTask() throws Exception {
         assertNotNull(task);
         assertEquals(ReadReviewTask.emulator.getLimit(), task.read().size());
     }

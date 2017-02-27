@@ -6,8 +6,6 @@ import com.vlashchevskyi.review.pattern.translate.GoogleTranslator;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -18,7 +16,6 @@ public class Runner {
     private int topAmount = 1000;
     private String pathToReviews;
 
-    private final ExecutorService pool;
     private final ReviewPrinter printer;
 
     private static final String TRANSLATE = "translate";
@@ -55,8 +52,8 @@ public class Runner {
     }
 
     private boolean calculateTop() throws InterruptedException, ExecutionException, IOException {
-        List<ReviewTaskObserver> tasks = prepareTasks();
-        List<Future> result = new Trigger(tasks.size()).trigger(tasks);
+        List<ReviewTaskObserver<Object>> tasks = prepareTasks();
+        List<Future<Object>> result = new Trigger(tasks.size()).trigger(tasks);
         print(result);
 
         return true;
@@ -68,8 +65,8 @@ public class Runner {
         return true;
     }
 
-    private List<ReviewTaskObserver> prepareTasks() throws IOException {
-        List<ReviewTaskObserver> tasks = new ArrayList<>();
+    private List<ReviewTaskObserver<Object>> prepareTasks() throws IOException {
+        List<ReviewTaskObserver<Object>> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
         tasks.add(new GetTopUsersTask());       // Task #1
         tasks.add(new GetTopItemsTask());       // Task #2
@@ -78,7 +75,7 @@ public class Runner {
         return tasks;
     }
 
-    private void print(List<Future> result) {
+    private void print(List<Future<Object>> result) {
         Map<String, Future> subjects = new LinkedHashMap<>();
 
         subjects.put("Top of the most active users", result.get(1));
@@ -92,7 +89,6 @@ public class Runner {
     }
 
     public Runner(String pathToReviews) {
-        pool = Executors.newFixedThreadPool(5);
         printer = new ReviewPrinter();
         this.pathToReviews = pathToReviews;
 

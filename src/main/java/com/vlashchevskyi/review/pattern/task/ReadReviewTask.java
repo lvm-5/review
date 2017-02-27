@@ -1,7 +1,6 @@
 package com.vlashchevskyi.review.pattern.task;
 
 import com.csvreader.CsvReader;
-import com.vlashchevskyi.review.pattern.MemoryCalc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,11 +12,10 @@ import java.util.List;
 public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver {
     private CsvReader reader;
     private T result;
-    private MemoryCalc mCalc;
 
     @Override
     public T doAction() throws Exception {
-        mCalc.freeMem();
+        mCalc.gc();
         T records = read();
         subject.setRecords(records);
         result = records;
@@ -27,7 +25,11 @@ public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver
 
     public T read() throws Exception {
         T records = (T) new ArrayList<String[]>();
-        while (mCalc.isFreeMemory() && reader.readRecord() && emulator.doToLimit(records)) {
+
+        long capacity = mCalc.calcCapacity();
+        while (records.size() < capacity
+                && !emulator.isLimit(records)
+                && reader.readRecord()) {
             records.add(reader.getValues());
         }
         return records;
@@ -42,14 +44,9 @@ public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver
         reader = new CsvReader(pathToReview);
         reader.readHeaders();
     }
-    public ReadReviewTask(String pathToReview, long limitInMb) throws IOException {
-        init(pathToReview);
-        mCalc = new MemoryCalc(limitInMb);
-    }
 
     public ReadReviewTask(String pathToReview) throws IOException {
         init(pathToReview);
-        mCalc = new MemoryCalc(500);
     }
 
 

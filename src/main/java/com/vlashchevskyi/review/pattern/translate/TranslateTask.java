@@ -1,9 +1,11 @@
 package com.vlashchevskyi.review.pattern.translate;
 
 import com.google.cloud.translate.Translate;
+import com.vlashchevskyi.review.pattern.Delay;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -15,7 +17,7 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.TEXT_COLUMN;
  * Created by lvm on 2/17/17.
  */
 public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T> {
-    private static final ReviewSplitter splitter = new ReviewSplitter();
+    private static final PhraseMaker splitter = new PhraseMaker(1000);
 
     private final Translate.TranslateOption srcLang;
     private final Translate.TranslateOption trgtLang;
@@ -27,11 +29,17 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
     private T targetReviews = (T) new ArrayList<String>();
 
     public T doTranslate() throws InterruptedException {
-        sourceReviews = (T) getRecords().map(r -> r[TEXT_COLUMN]).collect(Collectors.toList());
-        Set<String> phrases = splitter.split2Phrases(sourceReviews);
-        List<List<String>> blocks = splitter.split2Blocks(phrases);
+        sourceReviews = (T) getRecords()
+                .stream()
+                .map(r -> r[TEXT_COLUMN])
+                .collect(Collectors.toList());
 
-        List<TranslateRequestTask<Map<String, String>>> requests = new ArrayList<>();
+        Set<String> phrases = splitter.doPhraseByPattern(sourceReviews);
+        PhraseMap map = new PhraseMap();
+        map.putAll(phrases);
+        List<List<String>> blocks = new BlockMaker(map).buildBlocks();
+
+        List<TranslateRequestTask<Map<String, String>>> requests = new CopyOnWriteArrayList<>();
         Map<String, String> dictionary = new HashMap<>();
         for (int i = 0; i < blocks.size(); i++) {
             requests.add(new TranslateRequestTask(blocks.get(i), service, srcLang, trgtLang));
@@ -49,14 +57,13 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
 
     private synchronized List<Future<Map<String, String>>> doRequests(List<TranslateRequestTask<Map<String, String>>> requests) throws InterruptedException {
         List<Future<Map<String, String>>> fes = pool.invokeAll(requests);
-        while (fes.stream().anyMatch(f -> !f.isDone())) {
-            wait(200);
-        }
+        Delay dl = new Delay();
+        while (dl.doPauseIf(fes.stream().anyMatch(f -> !f.isDone()))) {}
 
         return fes;
     }
 
-    private void aggregate(T currentReviews) {
+    private void aggregate(T currentReviews) throws InterruptedException {
         targetReviews.addAll(currentReviews);
     }
 
@@ -64,19 +71,21 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
     //TODO: make more effective
     private T translate(List<String> reviews, Map<String, String> dictionary) {
         T target = (T) new ArrayList<String>();
-
-        reviews.parallelStream().forEach(r -> {
+        reviews.forEach(r -> {
             String review = r;
-            Set<String> phrases = splitter.split2Phrases(r);
+            Set<String> phrases = splitter.doPhraseByPattern(r);
+
             Iterator<String> it = phrases.iterator();
             while (it.hasNext()) {
                 String p = it.next();
-                review = review.replaceAll(p, dictionary.get(p));
+                String t = dictionary.get(p);
+                if (t != null && !t.isEmpty()){
+                    review = review.replaceAll(p, t);
+                }
             }
             target.add(review);
         });
-
-        return target;
+         return target;
     }
 
     private void fillDictionary(List<Future<Map<String, String>>> fes, Map<String, String> dictionary) {

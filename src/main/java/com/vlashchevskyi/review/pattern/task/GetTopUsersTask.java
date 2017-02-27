@@ -9,7 +9,7 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.USER_ID_COLUMN;
 /**
  * Created by lvm on 2/10/17.
  */
-public class GetTopUsersTask<U, T extends Map<User, Integer>> extends GetTopItemsTask<User, U, T> {
+public class GetTopUsersTask<T extends Map<User, Integer>> extends GetTopItemsTask<User, T> {
 
     @Override
     public synchronized T analyze() throws Exception {

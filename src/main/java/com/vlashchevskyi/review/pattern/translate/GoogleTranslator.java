@@ -16,13 +16,15 @@ import java.util.List;
  * Created by lvm on 2/16/17.
  */
 public class GoogleTranslator implements Emulator {
-    private int connetionLimit;
+    private int connectionLimit;
 
-    public void doTranslate(String pathToReviews) throws Exception {
-        List<ReviewTaskObserver> tasks = new ArrayList<>();
+    public boolean doTranslate(String pathToReviews) throws Exception {
+        List<ReviewTaskObserver<Object>> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
-        tasks.add(new TranslateTask(createTranslateService(), connetionLimit));
+        tasks.add(new TranslateTask(createTranslateService(), connectionLimit));
         new Trigger(tasks.size()).trigger(tasks);
+
+        return true;
     }
 
     /**
@@ -54,6 +56,6 @@ public class GoogleTranslator implements Emulator {
     }
 
     public GoogleTranslator() {
-        connetionLimit = 100;
+        connectionLimit = 100;
     }
 }
