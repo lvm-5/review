@@ -1,11 +1,10 @@
 package com.vlashchevskyi.review.pattern.translate;
 
 import com.google.cloud.translate.Translate;
-import com.vlashchevskyi.review.pattern.Delay;
+import com.vlashchevskyi.tool.Delay;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,12 +38,12 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
         map.putAll(phrases);
         List<List<String>> blocks = new BlockMaker(map).buildBlocks();
 
-        List<TranslateRequestTask<Map<String, String>>> requests = new CopyOnWriteArrayList<>();
+        List<TranslateRequestTask<Map<String, String>>> requests = new ArrayList<>();
         Map<String, String> dictionary = new HashMap<>();
         for (int i = 0; i < blocks.size(); i++) {
             requests.add(new TranslateRequestTask(blocks.get(i), service, srcLang, trgtLang));
             if (requests.size() == connectionLimit || i == blocks.size() - 1) {
-                fillDictionary(doRequests(requests), dictionary);
+                fillDictionary(dictionary, doRequests(requests));
                 requests = new ArrayList<>();
             }
         }
@@ -57,14 +56,14 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
 
     private synchronized List<Future<Map<String, String>>> doRequests(List<TranslateRequestTask<Map<String, String>>> requests) throws InterruptedException {
         List<Future<Map<String, String>>> fes = pool.invokeAll(requests);
-        Delay dl = new Delay();
+        Delay dl = new Delay(200);
         while (dl.doPauseIf(fes.stream().anyMatch(f -> !f.isDone()))) {}
 
         return fes;
     }
 
     private void aggregate(T currentReviews) throws InterruptedException {
-        targetReviews.addAll(currentReviews);
+       targetReviews.addAll(currentReviews);
     }
 
 
@@ -88,7 +87,7 @@ public class TranslateTask<T extends List<String>> extends ReviewTaskObserver<T>
          return target;
     }
 
-    private void fillDictionary(List<Future<Map<String, String>>> fes, Map<String, String> dictionary) {
+    private void fillDictionary(Map<String, String> dictionary, List<Future<Map<String, String>>> fes) {
         fes.forEach(f -> {
             try {
                 dictionary.putAll(f.get());

@@ -25,7 +25,11 @@ public class RunnerTest extends BaseTest {
         assertTrue(runner.handle(false));
     }
 
-
+    @Test
+    public void testTrigger_Translate() {
+        //AppRunner.main(new String[]{});
+        assertTrue(runner.handle(true));
+    }
 }
 
 

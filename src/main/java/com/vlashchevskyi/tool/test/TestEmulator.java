@@ -1,6 +1,6 @@
-package com.vlashchevskyi.review.pattern.test;
+package com.vlashchevskyi.tool.test;
 
-import com.vlashchevskyi.review.pattern.ReviewConstants;
+import com.vlashchevskyi.tool.memory.MemoryCalc;
 
 import java.util.Collection;
 
@@ -54,7 +54,7 @@ public class TestEmulator {
             return memoryLimit;
         }
         else {
-            return ReviewConstants.MEMORY_LIMIT;
+            return MemoryCalc.MEMORY_LIMIT;
         }
     }
 

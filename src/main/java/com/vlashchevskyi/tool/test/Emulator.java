@@ -1,4 +1,4 @@
-package com.vlashchevskyi.review.pattern.test;
+package com.vlashchevskyi.tool.test;
 
 /**
  * Created by lvm on 2/21/17.

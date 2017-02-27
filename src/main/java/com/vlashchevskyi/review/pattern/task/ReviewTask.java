@@ -1,7 +1,7 @@
 package com.vlashchevskyi.review.pattern.task;
 
-import com.vlashchevskyi.review.pattern.MemoryCalc;
-import com.vlashchevskyi.review.pattern.test.Emulator;
+import com.vlashchevskyi.tool.memory.MemoryCalc;
+import com.vlashchevskyi.tool.test.Emulator;
 
 import java.util.concurrent.Callable;
 

@@ -1,6 +1,7 @@
 package com.vlashchevskyi.review.pattern;
 
 import com.vlashchevskyi.review.pattern.task.*;
+import com.vlashchevskyi.tool.memory.MemoryMonitorTask;
 import com.vlashchevskyi.review.pattern.translate.GoogleTranslator;
 
 import java.io.IOException;
@@ -38,6 +39,11 @@ public class Runner {
     public boolean handle(boolean translateFlag) {
         boolean status;
 
+
+        Thread memoDmn = new Thread(new MemoryMonitorTask());
+        memoDmn.setDaemon(true);
+        memoDmn.start();
+
         try {
             status = calculateTop();
             status = translateFlag
@@ -47,6 +53,8 @@ public class Runner {
             status = false;
             e.printStackTrace();
         }
+
+        memoDmn.interrupt();
 
         return status;
     }

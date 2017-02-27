@@ -15,7 +15,6 @@ public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver
 
     @Override
     public T doAction() throws Exception {
-        mCalc.gc();
         T records = read();
         subject.setRecords(records);
         result = records;

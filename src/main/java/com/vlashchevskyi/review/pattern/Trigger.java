@@ -1,6 +1,7 @@
 package com.vlashchevskyi.review.pattern;
 
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
+import com.vlashchevskyi.tool.Delay;
 
 import java.io.IOException;
 import java.util.ArrayList;

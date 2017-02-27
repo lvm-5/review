@@ -1,18 +1,18 @@
-package com.vlashchevskyi.review.pattern;
+package com.vlashchevskyi.tool.memory;
 
 import org.apache.log4j.Logger;
-
-import static com.vlashchevskyi.review.pattern.ReviewConstants.MEMORY_LIMIT;
 
 /**
  * Created by lvm on 2/15/17.
  */
 public class MemoryCalc {
+    public static final int MEMORY_LIMIT = 500;
+
     private long limit;
     private final Runtime rt;
     private final MemoryUsage mUse;
 
-    private final int BYTE_TO_MB = 1024 * 1024;
+    private final int MB_IN_BYTE = 1024 * 1024;
 
     protected final Logger logger = Logger.getLogger("com.vlashchevskyi.review.pattern");
 
@@ -26,7 +26,11 @@ public class MemoryCalc {
     }
 
     public boolean isFreeMemory() {
-        return rt.freeMemory() > 0 && rt.totalMemory() <= limit - limit / 10;
+        return rt.freeMemory() > 0 && rt.totalMemory() <= limit ;
+    }
+
+    public boolean isFreeMemory(long safety) {
+        return rt.freeMemory() > 0 && rt.totalMemory() <= limit - safety * MB_IN_BYTE ;
     }
 
     public void gc() {
@@ -34,16 +38,16 @@ public class MemoryCalc {
     }
 
     public long toMB(float mem) {
-        return new Float(mem / BYTE_TO_MB).longValue();
+        return new Float(mem / MB_IN_BYTE).longValue();
     }
 
 
     public void setLimit(long inMb) {
-        limit = inMb * BYTE_TO_MB;
+        limit = inMb * MB_IN_BYTE;
     }
 
     public long getLImit() {
-        return new Float(limit / BYTE_TO_MB).intValue();
+        return new Float(limit / MB_IN_BYTE).intValue();
     }
 
 
@@ -56,19 +60,8 @@ public class MemoryCalc {
         private Long records;
         private Float rate;
 
-        private void initRate(long mem) {
-            float rt = calcRate(mem);
-            if (rt > 0 && rate == null) {
-                rate = rt;
-            }
-        }
-
         long calcCapacity(long mem) {
             long records = 0;
-
-            if (!isFreeMemory()) {
-                gc();
-            }
 
             if (isFreeMemory()) {
                 initRate(mem);
@@ -78,18 +71,12 @@ public class MemoryCalc {
                 } else {
                     records = Math.round((limit - mem) * rate);
                 }
-            } else {
-              logger.warn("\n Memory usage: "
-                      + "\n - total memory = "
-                      + toMB(rt.totalMemory()) + "Mb"
-                      + "\n - free memory = "
-                      + toMB(rt.freeMemory())+ "Mb"
-                      + "\n memory is limited to "
-                      + MEMORY_LIMIT + "Mb! \n");
             }
 
             update(mem, records);
-
+            if (records == 0) {
+                logger.warn("Capacity is zero. Some records arent' read!");
+            }
             return records;
         }
 
@@ -114,13 +101,26 @@ public class MemoryCalc {
             records = 100l;
         }
 
+        private void initRate(long mem) {
+            if (rate == null) {
+                float rt = calcRate(mem);
+                rate = (rt > 0)? rt: null;
+            }
+        }
+
         public Long getTotal() {
             return total;
         }
     }
 
     public MemoryCalc(long limit) {
+        this();
         setLimit(limit);
+
+    }
+
+    public MemoryCalc() {
+        limit = MEMORY_LIMIT;
         mUse = new MemoryUsage();
         rt = Runtime.getRuntime();
     }

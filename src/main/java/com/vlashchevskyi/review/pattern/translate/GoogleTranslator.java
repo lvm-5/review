@@ -6,7 +6,7 @@ import com.google.cloud.translate.TranslateOptions;
 import com.vlashchevskyi.review.pattern.Trigger;
 import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
-import com.vlashchevskyi.review.pattern.test.Emulator;
+import com.vlashchevskyi.tool.test.Emulator;
 
 import java.util.ArrayList;
 import java.util.List;

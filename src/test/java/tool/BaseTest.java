@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 
 import java.io.IOException;
 
-import static com.vlashchevskyi.review.pattern.test.Emulator.emulator;
+import static com.vlashchevskyi.tool.test.Emulator.emulator;
 
 /**
  * Created by lvm on 2/18/17.
