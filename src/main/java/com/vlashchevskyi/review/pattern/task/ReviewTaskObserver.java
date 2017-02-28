@@ -30,7 +30,7 @@ public abstract class ReviewTaskObserver<T, U extends List> implements ReviewTas
     }
 
     protected boolean isExit() {
-        return resource.size() > 0;
+        return resource.size() == 0;
     }
 
     public void setSubject(ReviewSubject subject) {
