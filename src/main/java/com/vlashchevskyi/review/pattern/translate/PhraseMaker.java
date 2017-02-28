@@ -10,7 +10,7 @@ import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.REVIE
  * Created by lvm on 2/16/17.
  */
 public class PhraseMaker {
-    private int blockSize;
+    private BlockMaker bMaker = new BlockMaker();
 
     public Set<String> doPhraseByPattern(String review) {
         Set<String> phrases = new HashSet<>();
@@ -18,7 +18,7 @@ public class PhraseMaker {
 
         for (String ph : phs) {
             String phrase = ph.trim();
-            if (phrase.length() > blockSize) {
+            if (phrase.length() > bMaker.getSize()) {
                 phrases.addAll(doPhraseByPos(phrase));
             } else if (!phrase.isEmpty()) {
                 phrases.add(phrase);
@@ -42,17 +42,16 @@ public class PhraseMaker {
         List<String> phs = new ArrayList<>();
 
         int start = 0;
-        int end = blockSize;
+        int end = bMaker.getSize();
         do {
             phs.add(phrase.substring(start, end));
             start = end;
-            end = start + blockSize;
+            end = start + bMaker.getSize();
             end = (end > phrase.length()) ? phrase.length() : end;
         }while (start != end);
 
         return phs;
     }
-
 
     public List<String> gatherSplitters(String reivew) {
         return Arrays.stream(reivew
@@ -60,9 +59,10 @@ public class PhraseMaker {
                 .filter(s->!s.isEmpty()).collect(Collectors.toList());
     }
 
+    public void setBMaker(BlockMaker bMaker) {
+        this.bMaker = bMaker;
+    }
 
-
-    public PhraseMaker(int blockSize) {
-        this.blockSize = blockSize;
+    public PhraseMaker() {
     }
 }

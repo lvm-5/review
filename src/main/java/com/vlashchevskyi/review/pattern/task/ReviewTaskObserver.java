@@ -8,10 +8,10 @@ import java.util.List;
 /**
  * Created by lvm on 2/11/17.
  */
-public abstract class ReviewTaskObserver<T> implements ReviewTask<T> {
+public abstract class ReviewTaskObserver<T, U extends List> implements ReviewTask<T> {
 
-    private List<String[]> records;
-    protected ReviewSubject subject;
+    private U resource;
+    protected ReviewSubject<U> subject;
 
     @Override
     public T call() throws Exception {
@@ -24,7 +24,7 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask<T> {
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
-            } while (records.size() > 0 && !emulator.getTestMode());
+            } while (resource.size() > 0 && !emulator.getTestMode());
         }
         return getResult();
     }
@@ -34,16 +34,16 @@ public abstract class ReviewTaskObserver<T> implements ReviewTask<T> {
     }
 
     public void handle() {
-        List<String[]> recs = subject.getRecords();
-        if (!recs.equals(records)) {
+        U recs = subject.getResource();
+        if (!recs.equals(resource)) {
             synchronized (this) {
-                records = recs;
+                resource = recs;
                 notify();
             }
         }
     }
-    public List<String[]> getRecords() {
-        return records;
+    public U getResource() {
+        return resource;
     }
 
     protected abstract T getResult();

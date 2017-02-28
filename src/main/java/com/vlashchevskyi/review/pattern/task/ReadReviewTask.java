@@ -9,14 +9,14 @@ import java.util.List;
 /**
  * Created by lvm on 2/10/17.
  */
-public class ReadReviewTask<T extends List<String[]>> extends ReviewTaskObserver {
+public class ReadReviewTask<T extends List<String[]>, U extends List> extends ReviewTaskObserver<T, U> {
     private CsvReader reader;
     private T result;
 
     @Override
     public T doAction() throws Exception {
         T records = read();
-        subject.setRecords(records);
+        subject.setResource((U)records);
         result = records;
         return records;
     }

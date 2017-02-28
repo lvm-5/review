@@ -1,11 +1,12 @@
-package com.vlashchevskyi.review.pattern.translate;
+package com.vlashchevskyi.review.pattern.translate.task;
 
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.Translation;
-import com.vlashchevskyi.review.pattern.task.ReviewTask;
+import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,25 +15,42 @@ import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK
 /**
  * Created by lvm on 2/19/17.
  */
-public class TranslateRequestTask<T extends Map<String, String>> implements ReviewTask<T> {
+public class TranslateRequestTask<T extends Map<String, String>
+        , U extends LinkedList<List<String>>> extends ReviewTaskObserver<T, U> {
 
     private final Translate.TranslateOption srcLang;
     private final Translate.TranslateOption trgtLang;
-    private final List<String> block;
     private final Translate service;
+    private final T dictionary;
 
     private static final Logger logger = Logger.getLogger("com.vlashchevskyi.review.pattern.translate");
 
     @Override
-    public T call() throws Exception {
-        return doAction();
+    public T doAction() throws Exception {
+        List<String> block = getBlock();
+        if (block == null) {
+            return (T)new HashMap<String, String>();
+        }
+
+        String message = prepareMessage(block);
+        String translate = translate(message);
+        T dic = match(translate, block);
+        aggregate(dic);
+
+        return dic;
+    }
+
+    private List<String> getBlock() {
+        return getResource().pollFirst();
     }
 
     @Override
-    public T doAction() throws Exception {
-        String message = prepareMessage(block);
-        String translate = translate(message);
-        return match(translate);
+    protected T getResult() {
+        return dictionary;
+    }
+
+    private void aggregate(T mapping) {
+        dictionary.putAll(mapping);
     }
 
     private String prepareMessage(List<String> block) {
@@ -48,7 +66,7 @@ public class TranslateRequestTask<T extends Map<String, String>> implements Revi
         return translation.getTranslatedText();
     }
 
-    private T match(String translate) {
+    private T match(String translate, List<String> block) {
         T dictionary = (T)new HashMap<String, String>();
         String[] translates = translate.split(BLOCK_SPLITTER);
 
@@ -65,10 +83,10 @@ public class TranslateRequestTask<T extends Map<String, String>> implements Revi
         return dictionary;
     }
 
-    public TranslateRequestTask(List<String> block, Translate service, Translate.TranslateOption srcLang, Translate.TranslateOption trgtLang) {
-        this.block = block;
+    public TranslateRequestTask(Translate service, Translate.TranslateOption srcLang, Translate.TranslateOption trgtLang) {
         this.service = service;
         this.srcLang = srcLang;
         this.trgtLang = trgtLang;
+        this.dictionary = (T) new HashMap<String, String>();
     }
 }

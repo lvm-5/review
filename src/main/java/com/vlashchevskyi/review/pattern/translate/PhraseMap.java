@@ -68,6 +68,11 @@ public class PhraseMap {
         return map.size();
     }
 
+    public PhraseMap(Set<String> phrases) {
+        this();
+        putAll(phrases);
+    }
+
     public PhraseMap() {
         map = new HashMap<>();
     }

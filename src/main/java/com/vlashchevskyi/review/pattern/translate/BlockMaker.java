@@ -8,6 +8,8 @@ import java.util.*;
 public class BlockMaker {
     private PhraseMap map;
     private Integer size;
+
+    public static int DEFAULT_BLOCK_SIZE = 1000;
     public static final String PHRASE_SPLITTER = ".";
 
     public List<List<String>> buildBlocks() {
@@ -127,13 +129,17 @@ public class BlockMaker {
         return map;
     }
 
-    public BlockMaker(PhraseMap map) {
-        this.map = map;
-        this.size = 1000;
+    public BlockMaker() {
+        this.size = DEFAULT_BLOCK_SIZE;
     }
 
     public BlockMaker(PhraseMap map, Integer size) {
         this.map = map;
         this.size = size;
+    }
+
+    public BlockMaker(PhraseMap map) {
+        this();
+        this.map = map;
     }
 }

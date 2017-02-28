@@ -14,15 +14,20 @@ import java.util.concurrent.Future;
 /**
  * Created by lvm on 2/18/17.
  */
-public class Trigger {
+public class Trigger<T extends ReviewTaskObserver<Object, List> > {
     private final ExecutorService pool;
+    private ReviewSubject subject = new ReviewSubject();
 
+    public void setSubject(ReviewSubject subject) {
+        this.subject = subject;
+    }
 
-    public synchronized List<Future<Object>> trigger(List<ReviewTaskObserver<Object>> tasks) throws IOException, ExecutionException, InterruptedException {
+    public synchronized List<Future<Object>> trigger(List<T> tasks)
+            throws IOException, ExecutionException, InterruptedException {
 
         // starter task should be first
         ReviewTaskObserver starter = tasks.get(0);
-        ReviewSubject subject = new ReviewSubject();
+
         tasks.forEach(t -> subject.addTask(t));
 
         List<Future<Object>> fes = null;
@@ -41,7 +46,7 @@ public class Trigger {
         return fes;
     }
 
-    private synchronized List<Future<Object>> submit(List<ReviewTaskObserver<Object>> tasks) throws InterruptedException {
+    private synchronized List<Future<Object>> submit(List<T> tasks) throws InterruptedException {
         List<Future<Object>> fes = new ArrayList<>();
         tasks.forEach(t->fes.add(pool.submit(t)));
 

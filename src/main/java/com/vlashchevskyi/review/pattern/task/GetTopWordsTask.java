@@ -18,7 +18,7 @@ public class GetTopWordsTask<T extends Map<String, Integer>> extends GetTopItems
 
         final T wordStatistics = (T) new HashMap();
 
-        getRecords().forEach(record -> {
+        getResource().forEach(record -> {
             String body = getReviewText((String[]) record);
             Arrays.stream(body.toLowerCase().split(PATTERN))
                     .forEach(word -> {

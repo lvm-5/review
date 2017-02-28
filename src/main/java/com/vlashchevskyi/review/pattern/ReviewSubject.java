@@ -3,14 +3,16 @@ package com.vlashchevskyi.review.pattern;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
  * Created by lvm on 2/11/17.
  */
-public class ReviewSubject {
-    private List<String[]> records = new ArrayList<>();
-    private List<ReviewTaskObserver> tasks = new ArrayList<>();
+public class ReviewSubject<T extends List> {
+    private T resource = (T) new ArrayList();
+
+    private List<ReviewTaskObserver> tasks = new LinkedList<>();
     private int readyCounter = 0;
     private final String lock;
 
@@ -22,6 +24,7 @@ public class ReviewSubject {
     public void removeTask(ReviewTaskObserver task) {
         task.setSubject(null);
         tasks.remove(task);
+
     }
 
     public void update() {
@@ -35,17 +38,21 @@ public class ReviewSubject {
         }
     }
 
-    public void setRecords(List<String[]> records) {
+    public void setResource(T resource) {
         synchronized (lock) {
-            this.records = records;
+            this.resource = resource;
             update();
         }
     }
 
-    public List<String[]> getRecords() {
+    public T getResource() {
         synchronized (lock) {
-            return records;
+            return resource;
         }
+    }
+
+    public List<ReviewTaskObserver> getTasks() {
+        return tasks;
     }
 
     public synchronized void updateReadyCounter() {
@@ -61,6 +68,6 @@ public class ReviewSubject {
     }
 
     public ReviewSubject() {
-        lock = new String("records");
+        lock = new String("resource");
     }
 }

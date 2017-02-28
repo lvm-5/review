@@ -12,11 +12,11 @@ import static org.junit.Assert.assertEquals;
  * Created by lvm on 2/24/17.
  */
 public class BlockMakerTest {
-    private BlockMaker maker;
+    private BlockMaker bMaker;
 
     @Before
     public void setUp() {
-        maker = null;
+        bMaker = null;
     }
 
     private PhraseMap preparePhrases() {
@@ -33,11 +33,12 @@ public class BlockMakerTest {
     @Test
     public void testBuildBlock() {
         PhraseMap map = preparePhrases();
-        maker = new BlockMaker(map);
+        bMaker = new BlockMaker();
+        bMaker.setMap(map);
 
         int size = 18;
-        Map plan = maker.planBlock(size);
-        List<String> block = maker.buildBlock(plan);
+        Map plan = bMaker.planBlock(size);
+        List<String> block = bMaker.buildBlock(plan);
         assertEquals(0, map.size());
         assertEquals(14, block.stream().mapToInt(p->p.length()).sum());
     }
@@ -45,10 +46,11 @@ public class BlockMakerTest {
     @Test
     public void testPlanBlock_Part() {
         PhraseMap map = preparePhrases();
-        maker = new BlockMaker(map);
+        bMaker = new BlockMaker();
+        bMaker.setMap(map);
 
         int size = 16;
-        Map<Integer, Integer> plan = maker.planBlock(size);
+        Map<Integer, Integer> plan = bMaker.planBlock(size);
 
         int amount = 3;
         assertEquals(amount, plan.size());
@@ -59,10 +61,11 @@ public class BlockMakerTest {
     @Test
     public void testPlanBlock_Intermediate() {
         PhraseMap map = preparePhrases();
-        maker = new BlockMaker(map);
+        bMaker = new BlockMaker();
+        bMaker.setMap(map);
 
         int size = 8;
-        Map<Integer, Integer> plan = maker.planBlock(size);
+        Map<Integer, Integer> plan = bMaker.planBlock(size);
 
         int amount = 2;
         assertEquals(amount, plan.size());
@@ -78,10 +81,11 @@ public class BlockMakerTest {
         map.put("wow");
         map.put(marker);
 
-        maker = new BlockMaker(map);
+        bMaker = new BlockMaker();
+        bMaker.setMap(map);
 
         Integer size = 13;
-        Map<Integer, Integer> plan = maker.planBlock(size);
+        Map<Integer, Integer> plan = bMaker.planBlock(size);
         assertEquals(3, plan.size());
         assertEquals(marker, map.get(marker.length() + BlockMaker.PHRASE_SPLITTER.length()));
     }

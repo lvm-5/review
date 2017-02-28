@@ -1,6 +1,7 @@
 package com.vlashchevskyi.review.pattern.task;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -9,7 +10,9 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.PRODUCT_ID_COLUMN
 /**
  * Created by lvm on 2/10/17.
  */
-public class GetTopItemsTask<K, T extends Map<K, Integer>> extends ReviewTaskObserver<T> {
+public class GetTopItemsTask<K, T extends Map<K, Integer>
+        , U extends List<String[]>> extends ReviewTaskObserver<T, U> {
+
     private final T topItems;
 
     @Override
@@ -33,7 +36,8 @@ public class GetTopItemsTask<K, T extends Map<K, Integer>> extends ReviewTaskObs
 
     protected T sumByColumn(int column) {
         T statistics = (T) new HashMap<K, Integer>();
-        getRecords().forEach(record-> {
+        U records = getResource();
+        records.forEach(record-> {
             String itemID = record[column];
             Integer sum = statistics.get(itemID);
             sum = (sum == null)? 1

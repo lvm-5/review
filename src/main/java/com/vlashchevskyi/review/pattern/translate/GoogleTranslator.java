@@ -6,6 +6,7 @@ import com.google.cloud.translate.TranslateOptions;
 import com.vlashchevskyi.review.pattern.Trigger;
 import com.vlashchevskyi.review.pattern.task.ReadReviewTask;
 import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
+import com.vlashchevskyi.review.pattern.translate.task.TranslateTask;
 import com.vlashchevskyi.tool.test.Emulator;
 
 import java.util.ArrayList;
@@ -15,11 +16,11 @@ import java.util.List;
 /**
  * Created by lvm on 2/16/17.
  */
-public class GoogleTranslator implements Emulator {
+public class GoogleTranslator<T extends ReviewTaskObserver<Object, List>> implements Emulator {
     private int connectionLimit;
 
     public boolean doTranslate(String pathToReviews) throws Exception {
-        List<ReviewTaskObserver<Object>> tasks = new ArrayList<>();
+        List<ReviewTaskObserver<Object, List>> tasks = new ArrayList<>();
         tasks.add(new ReadReviewTask(pathToReviews));
         tasks.add(new TranslateTask(createTranslateService(), connectionLimit));
         new Trigger(tasks.size()).trigger(tasks);

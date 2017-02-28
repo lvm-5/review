@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Created by lvm on 2/6/17.
  */
-public class Runner {
+public class Runner<T extends ReviewTaskObserver<Object, List>> {
     private int topAmount = 1000;
     private String pathToReviews;
 
@@ -59,8 +59,10 @@ public class Runner {
         return status;
     }
 
-    private boolean calculateTop() throws InterruptedException, ExecutionException, IOException {
-        List<ReviewTaskObserver<Object>> tasks = prepareTasks();
+    private boolean calculateTop()
+            throws InterruptedException, ExecutionException, IOException {
+
+        List<T> tasks = prepareTasks();
         List<Future<Object>> result = new Trigger(tasks.size()).trigger(tasks);
         print(result);
 
@@ -73,12 +75,12 @@ public class Runner {
         return true;
     }
 
-    private List<ReviewTaskObserver<Object>> prepareTasks() throws IOException {
-        List<ReviewTaskObserver<Object>> tasks = new ArrayList<>();
-        tasks.add(new ReadReviewTask(pathToReviews));
-        tasks.add(new GetTopUsersTask());       // Task #1
-        tasks.add(new GetTopItemsTask());       // Task #2
-        tasks.add(new GetTopWordsTask());       // Task #3
+    private List<T> prepareTasks() throws IOException {
+        List<T> tasks = new ArrayList<>();
+        tasks.add((T)new ReadReviewTask(pathToReviews));
+        tasks.add((T)new GetTopUsersTask());       // Task #1
+        tasks.add((T)new GetTopItemsTask());       // Task #2
+        tasks.add((T)new GetTopWordsTask());       // Task #3
 
         return tasks;
     }

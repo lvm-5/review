@@ -1,6 +1,7 @@
 package com.vlashchevskyi.review.pattern.task;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.vlashchevskyi.review.pattern.ReviewConstants.PROFILE_COLUMN;
@@ -9,7 +10,7 @@ import static com.vlashchevskyi.review.pattern.ReviewConstants.USER_ID_COLUMN;
 /**
  * Created by lvm on 2/10/17.
  */
-public class GetTopUsersTask<T extends Map<User, Integer>> extends GetTopItemsTask<User, T> {
+public class GetTopUsersTask<T extends Map<User, Integer>, U extends List<String[]>> extends GetTopItemsTask<User, T, U> {
 
     @Override
     public synchronized T analyze() throws Exception {
@@ -24,7 +25,7 @@ public class GetTopUsersTask<T extends Map<User, Integer>> extends GetTopItemsTa
     @Override
     protected T sumByColumn(int column) {
         T statistics = (T) new HashMap<User, Integer>();
-        getRecords().forEach(record -> {
+        getResource().forEach(record -> {
             User ur = new User(record[column], record[PROFILE_COLUMN]);
             Integer sum = statistics.get(ur);
             sum = (sum == null) ? 1 : ++sum;
