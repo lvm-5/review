@@ -28,7 +28,7 @@ public class TranslateTask<T extends List<String>
 
 
     public T translateAll() throws InterruptedException, IOException, ExecutionException {
-        List tasks = new ArrayList();
+        List<TranslateTaskObserver> tasks = new ArrayList();
         List<String> sourceReviews = makeSourceReviews(getResource());
         tasks.add(new BuildBlockTask(sourceReviews));
         for (int i = 0; i < connectionLimit ; i++) {

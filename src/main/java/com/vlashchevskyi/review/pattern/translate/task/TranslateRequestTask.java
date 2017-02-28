@@ -2,7 +2,6 @@ package com.vlashchevskyi.review.pattern.translate.task;
 
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.Translation;
-import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK
  * Created by lvm on 2/19/17.
  */
 public class TranslateRequestTask<T extends Map<String, String>
-        , U extends LinkedList<List<String>>> extends ReviewTaskObserver<T, U> {
+        , U extends LinkedList<List<String>>> extends TranslateTaskObserver<T, U> {
 
     private final Translate.TranslateOption srcLang;
     private final Translate.TranslateOption trgtLang;
@@ -41,7 +40,8 @@ public class TranslateRequestTask<T extends Map<String, String>
     }
 
     private List<String> getBlock() {
-        return getResource().pollFirst();
+        U blocks = getResource();
+        return blocks.pollFirst();
     }
 
     @Override
@@ -75,9 +75,9 @@ public class TranslateRequestTask<T extends Map<String, String>
                 dictionary.put(block.get(i), translates[i]);
             }
         } else {
-            if (emulator.getTestMode()) {
+            //if (emulator.getTestMode()) {
                 logger.warn("translation isn't equaled to source");
-            }
+            //}
         }
 
         return dictionary;

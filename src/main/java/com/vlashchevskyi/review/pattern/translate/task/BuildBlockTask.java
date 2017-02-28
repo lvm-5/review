@@ -1,6 +1,5 @@
 package com.vlashchevskyi.review.pattern.translate.task;
 
-import com.vlashchevskyi.review.pattern.task.ReviewTaskObserver;
 import com.vlashchevskyi.review.pattern.translate.BlockMaker;
 import com.vlashchevskyi.review.pattern.translate.PhraseMaker;
 import com.vlashchevskyi.review.pattern.translate.PhraseMap;
@@ -11,17 +10,19 @@ import java.util.Set;
 /**
  * Created by lvm on 2/10/17.
  */
-public class BuildBlockTask<T extends List<List<String>>, U extends List> extends ReviewTaskObserver<T, U> {
+public class BuildBlockTask<T extends List<List<String>>
+        , U extends List> extends TranslateTaskObserver<T, U> {
+
     private T result;
     private List<String> reviews;
 
     @Override
     public synchronized T doAction() throws Exception {
+        T blocks;
         if (result == null) {
-            T blocks = build();
+            blocks = build();
             result = blocks;
             subject.setResource((U) blocks);
-
         }
 
         return result;

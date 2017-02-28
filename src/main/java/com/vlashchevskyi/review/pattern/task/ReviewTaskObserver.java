@@ -24,9 +24,13 @@ public abstract class ReviewTaskObserver<T, U extends List> implements ReviewTas
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
-            } while (resource.size() > 0 && !emulator.getTestMode());
+            } while (!isExit() && !emulator.getTestMode());
         }
         return getResult();
+    }
+
+    protected boolean isExit() {
+        return resource.size() > 0;
     }
 
     public void setSubject(ReviewSubject subject) {
