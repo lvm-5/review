@@ -13,7 +13,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class PhraseMapTest {
     private PhraseMap phrases;
-    private String[] marker = new String[]{"Hello", "salut"};
 
     @Before
     public void setUp() {
@@ -22,15 +21,22 @@ public class PhraseMapTest {
 
     @Test
     public void testPut() {
-        Integer len = 6;
-
-        phrases.put(marker[0]);
+        String phrase = "Hello";
+        phrases.put(phrase);
         assertEquals(1, phrases.size());
-        assertEquals(marker[0], phrases.get(len));
 
-        phrases.put(marker[1]);
+        Integer len = phrase.length();
+        assertEquals(phrase, phrases.get(len));
+    }
+
+    @Test
+    public void testPut_SpecialSymbol() {
+        String phrase = "/Hello";
+        phrases.put(phrase);
         assertEquals(1, phrases.size());
-        assertEquals(marker[1], phrases.get(len));
+
+        int len = phrase.length() + new String("/").length();
+        assertEquals("\\/Hello", phrases.get(len));
         assertEquals(0, phrases.size());
     }
 

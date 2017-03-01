@@ -49,12 +49,12 @@ public class BlockMakerTest {
         bMaker = new BlockMaker();
         bMaker.setMap(map);
 
-        int size = 16;
+        int size = 13;
         Map<Integer, Integer> plan = bMaker.planBlock(size);
 
         int amount = 3;
         assertEquals(amount, plan.size());
-        assertEquals(15, plan.keySet().stream().mapToInt(l->l).sum());
+        assertEquals(12, plan.keySet().stream().mapToInt(l->l).sum());
 
     }
 
@@ -74,20 +74,20 @@ public class BlockMakerTest {
 
     @Test
     public void testPlanBlock() {
-        String marker = "Ok";
+        String phrase = "Ok";
 
         PhraseMap map = new PhraseMap();
         map.put("Hello");
         map.put("wow");
-        map.put(marker);
+        map.put(phrase);
 
         bMaker = new BlockMaker();
         bMaker.setMap(map);
 
-        Integer size = 13;
+        Integer size = 10;
         Map<Integer, Integer> plan = bMaker.planBlock(size);
         assertEquals(3, plan.size());
-        assertEquals(marker, map.get(marker.length() + BlockMaker.PHRASE_SPLITTER.length()));
+        assertEquals(phrase, map.get(phrase.length()));
     }
 
 }

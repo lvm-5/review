@@ -1,5 +1,7 @@
 package com.vlashchevskyi.review.pattern.translate;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,7 +14,9 @@ public class PhraseMap {
     private List<Integer> keys = new ArrayList<>();
 
     public void put(String phrase) {
-        Integer len = phrase.length() + BlockMaker.PHRASE_SPLITTER.length();
+        String escapedPhrase = StringEscapeUtils.escapeJson(phrase);
+
+        Integer len = escapedPhrase.length();
         LinkedList<String> pGroup = map.get(len);
         if (pGroup == null) {
             pGroup = new LinkedList();
@@ -21,7 +25,7 @@ public class PhraseMap {
                 turnKeysFgOn();
             }
         }
-        pGroup.push(phrase);
+        pGroup.push(escapedPhrase);
     }
 
     public void putAll(Set<String> phrases) {

@@ -9,8 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static com.vlashchevskyi.review.pattern.translate.SplitterConstants.BLOCK_SPLITTER;
-
 /**
  * Created by lvm on 2/19/17.
  */
@@ -28,15 +26,33 @@ public class TranslateRequestTask<T extends Map<String, String>
     public T doAction() throws Exception {
         List<String> block = getBlock();
         if (block == null) {
-            return (T)new HashMap<String, String>();
+            return (T) new HashMap<String, String>();
         }
 
-        String message = prepareMessage(block);
-        String translate = translate(message);
-        T dic = match(translate, block);
+        T dic = translate(block);
         aggregate(dic);
 
         return dic;
+    }
+
+    private T translate(List<String> blocks) {
+        T dictionary = (T) new HashMap<String, String>();
+        List<Translation> translation = service.translate(blocks, srcLang, trgtLang);
+
+        if (translation.size() == blocks.size()) {
+            for (int i = 0; i < blocks.size(); i++) {
+                dictionary.put(blocks.get(i), translation.get(i).getTranslatedText());
+            }
+        } else if (!emulator.getTestMode()) {
+            synchronized (this) {
+                logger.warn("translation isn't equaled to source");
+                StringBuilder srcText = new StringBuilder();
+                blocks.forEach(b -> srcText.append(b).append("."));
+                logger.warn("source text: " + srcText.toString());
+            }
+        }
+
+        return dictionary;
     }
 
     private List<String> getBlock() {
@@ -51,36 +67,6 @@ public class TranslateRequestTask<T extends Map<String, String>
 
     private void aggregate(T mapping) {
         dictionary.putAll(mapping);
-    }
-
-    private String prepareMessage(List<String> block) {
-        StringBuilder message = new StringBuilder();
-        block.forEach(b -> message.append(b).append(BLOCK_SPLITTER));
-
-        return message.toString();
-    }
-
-    private String translate(String message) {
-
-        Translation translation = service.translate(message, srcLang, trgtLang);
-        return translation.getTranslatedText();
-    }
-
-    private T match(String translate, List<String> block) {
-        T dictionary = (T)new HashMap<String, String>();
-        String[] translates = translate.split(BLOCK_SPLITTER);
-
-        if (translates.length == block.size()) {
-            for (int i = 0; i < block.size(); i++) {
-                dictionary.put(block.get(i), translates[i]);
-            }
-        } else {
-            //if (emulator.getTestMode()) {
-                logger.warn("translation isn't equaled to source");
-            //}
-        }
-
-        return dictionary;
     }
 
     public TranslateRequestTask(Translate service, Translate.TranslateOption srcLang, Translate.TranslateOption trgtLang) {

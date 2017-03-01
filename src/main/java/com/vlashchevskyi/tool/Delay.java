@@ -4,7 +4,7 @@ package com.vlashchevskyi.tool;
  * Created by lvm on 2/22/17.
  */
 public class Delay {
-    private static int TIME_LIMIT = 5000;
+    private static int TIME_LIMIT = 10000;
     public static final int DELAY = 1000;
 
     private long delay = 1;
